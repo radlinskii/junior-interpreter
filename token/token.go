@@ -26,5 +26,19 @@ const (
 	RBRACE = "}"
 
 	FUNCTION = "FUNCTION"
+	RETURN   = "RETURN"
 	VAR      = "VAR"
 )
+
+var keywords = map[string]TokenType{
+	"fun":    FUNCTION,
+	"var":    VAR,
+	"return": RETURN,
+}
+
+func LookUpIdent(ident string) TokenType {
+	if tok, ok := keywords[ident]; ok {
+		return tok
+	}
+	return IDENT
+}

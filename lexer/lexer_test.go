@@ -185,3 +185,48 @@ func TestNextToken4(t *testing.T) {
 		}
 	}
 }
+
+func TestNextToken5(t *testing.T) {
+	input := `(five == 5) (ten != 5)
+	(five <= 6) (ten >= 10)`
+
+	tests := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.LPAREN, "("},
+		{token.IDENT, "five"},
+		{token.EQ, "=="},
+		{token.INT, "5"},
+		{token.RPAREN, ")"},
+		{token.LPAREN, "("},
+		{token.IDENT, "ten"},
+		{token.NEQ, "!="},
+		{token.INT, "5"},
+		{token.RPAREN, ")"},
+		{token.LPAREN, "("},
+		{token.IDENT, "five"},
+		{token.LTE, "<="},
+		{token.INT, "6"},
+		{token.RPAREN, ")"},
+		{token.LPAREN, "("},
+		{token.IDENT, "ten"},
+		{token.GTE, ">="},
+		{token.INT, "10"},
+		{token.RPAREN, ")"},
+		{token.EOF, ""},
+	}
+
+	l := New(input)
+
+	for i, tt := range tests {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
+		}
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}

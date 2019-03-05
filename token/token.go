@@ -9,13 +9,23 @@ type Token struct {
 
 const (
 	ILLEGAL = "ILLEGAL"
-	EOF     = "EOF"
-	IDENT   = "IDENT"
+
+	EOF = "EOF"
+
+	IDENT = "IDENT"
 
 	INT = "INT"
 
-	ASSIGN = "="
-	PLUS   = "+"
+	// OPERATORS
+	ASSIGN   = "="
+	PLUS     = "+"
+	MINUS    = "-"
+	BANG     = "!"
+	ASTERISK = "*"
+	SLASH    = "/"
+
+	LT = "<"
+	GT = ">"
 
 	COMMA     = ","
 	SEMICOLON = ";"

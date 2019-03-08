@@ -30,8 +30,8 @@ type Parser struct {
 	peekToken token.Token
 	errors    []string
 
-	prefixParseFuncs map[token.TokenType]prefixParseFunc
-	infixParseFuncs  map[token.TokenType]infixParseFunc
+	prefixParseFuncs map[token.Type]prefixParseFunc
+	infixParseFuncs  map[token.Type]infixParseFunc
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -41,7 +41,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 	p.nextToken()
 
-	p.prefixParseFuncs = make(map[token.TokenType]prefixParseFunc)
+	p.prefixParseFuncs = make(map[token.Type]prefixParseFunc)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
@@ -59,11 +59,11 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.lexer.NextToken()
 }
 
-func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFunc) {
+func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFunc) {
 	p.prefixParseFuncs[tokenType] = fn
 }
 
-func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFunc) {
+func (p *Parser) registerInfix(tokenType token.Type, fn infixParseFunc) {
 	p.infixParseFuncs[tokenType] = fn
 }
 
@@ -118,15 +118,15 @@ func (p *Parser) parseVarStatement() ast.Statement {
 	return stmnt
 }
 
-func (p *Parser) curTokenIs(t token.TokenType) bool {
+func (p *Parser) curTokenIs(t token.Type) bool {
 	return p.curToken.Type == t
 }
 
-func (p *Parser) peekTokenIs(t token.TokenType) bool {
+func (p *Parser) peekTokenIs(t token.Type) bool {
 	return p.peekToken.Type == t
 }
 
-func (p *Parser) expectPeek(t token.TokenType) bool {
+func (p *Parser) expectPeek(t token.Type) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
 		return true
@@ -135,7 +135,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 	return false
 }
 
-func (p *Parser) peekError(t token.TokenType) {
+func (p *Parser) peekError(t token.Type) {
 	msg := fmt.Sprintf("Unexpected token %s on line %d, expected %s.\n", p.peekToken.Type, p.lexer.RowNum, t)
 
 	p.errors = append(p.errors, msg)
@@ -178,7 +178,7 @@ func (p *Parser) parseExpression(precendence int) ast.Expression {
 	return leftExp
 }
 
-func (p *Parser) noPrefixParseFuncError(t token.TokenType) {
+func (p *Parser) noPrefixParseFuncError(t token.Type) {
 	msg := fmt.Sprintf("no prefix parse function for %s found", t)
 	p.errors = append(p.errors, msg)
 }

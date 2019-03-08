@@ -1,9 +1,9 @@
 package token
 
-type TokenType string
+type Type string
 
 type Token struct {
-	Type    TokenType
+	Type    Type
 	Literal string
 }
 
@@ -48,7 +48,7 @@ const (
 	ELSE     = "ELSE"
 )
 
-var keywords = map[string]TokenType{
+var keywords = map[string]Type{
 	"fun":    FUNCTION,
 	"var":    VAR,
 	"return": RETURN,
@@ -58,7 +58,7 @@ var keywords = map[string]TokenType{
 	"else":   ELSE,
 }
 
-func LookUpIdent(ident string) TokenType {
+func LookUpIdent(ident string) Type {
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}

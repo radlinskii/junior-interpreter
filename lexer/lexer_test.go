@@ -10,7 +10,7 @@ func TestNextToken1(t *testing.T) {
 	input := `=+(){},;`
 
 	tests := []struct {
-		expectedType    token.TokenType
+		expectedType    token.Type
 		expectedLiteral string
 	}{
 		{token.ASSIGN, "="},
@@ -47,7 +47,7 @@ func TestNextToken2(t *testing.T) {
 	`
 
 	tests := []struct {
-		expectedType    token.TokenType
+		expectedType    token.Type
 		expectedLiteral string
 	}{
 		{token.VAR, "var"},
@@ -109,7 +109,7 @@ func TestNextToken3(t *testing.T) {
 	5 < 10 > 	5;`
 
 	tests := []struct {
-		expectedType    token.TokenType
+		expectedType    token.Type
 		expectedLiteral string
 	}{
 		{token.BANG, "!"},
@@ -149,7 +149,7 @@ func TestNextToken4(t *testing.T) {
 	}`
 
 	tests := []struct {
-		expectedType    token.TokenType
+		expectedType    token.Type
 		expectedLiteral string
 	}{
 		{token.IF, "if"},
@@ -191,7 +191,7 @@ func TestNextToken5(t *testing.T) {
 	(five <= 6) (ten >= 10)`
 
 	tests := []struct {
-		expectedType    token.TokenType
+		expectedType    token.Type
 		expectedLiteral string
 	}{
 		{token.LPAREN, "("},

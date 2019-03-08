@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/user"
 
-	"./repl"
+	"github.com/radlinskii/interpreter/repl"
 )
 
 func main() {

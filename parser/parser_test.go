@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"../ast"
-	"../lexer"
+	"github.com/radlinskii/interpreter/ast"
+	"github.com/radlinskii/interpreter/lexer"
 )
 
 func TestVarStatements(t *testing.T) {

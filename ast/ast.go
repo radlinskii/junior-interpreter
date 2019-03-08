@@ -3,7 +3,7 @@ package ast
 import (
 	"bytes"
 
-	"../token"
+	"github.com/radlinskii/interpreter/token"
 )
 
 type Node interface {

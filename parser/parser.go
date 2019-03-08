@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"../ast"
-	"../lexer"
-	"../token"
+	"github.com/radlinskii/interpreter/ast"
+	"github.com/radlinskii/interpreter/lexer"
+	"github.com/radlinskii/interpreter/token"
 )
 
 const (

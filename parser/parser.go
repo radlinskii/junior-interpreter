@@ -10,15 +10,21 @@ import (
 )
 
 const (
-	// precendence values from 1 to 7
 	_ int = iota
+	// LOWEST == 1 default precedence
 	LOWEST
-	EQUALS      // ==
-	LESSGREATER // > | < | <= | >=
-	SUM         // + | -
-	PRODUCT     // / | *
-	PREFIX      // -X | !X
-	CALL        // someFun(X)
+	// EQUALS == 2 precedence for operators [==,!=]
+	EQUALS
+	// LESSGREATER == 3 precedence for operators [>,<,>=,<=]
+	LESSGREATER
+	// SUM == 4 precedence for operators [+,"infixed" -]
+	SUM
+	// PRODUCT == 5 precedence for operators [*,/]
+	PRODUCT
+	// PREFIX == 6 precedence for operators ["prefixed" -,!]
+	PREFIX
+	// CALL == 6 precedence for operator (
+	CALL
 )
 
 var precedences = map[token.Type]int{
@@ -38,6 +44,7 @@ var precedences = map[token.Type]int{
 type prefixParseFunc func() ast.Expression
 type infixParseFunc func(ast.Expression) ast.Expression
 
+// Parser structure represents the semantic analyzer.
 type Parser struct {
 	lexer *lexer.Lexer
 
@@ -49,6 +56,7 @@ type Parser struct {
 	infixParseFuncs  map[token.Type]infixParseFunc
 }
 
+// New creates new Parser with given lexical analyzer object.
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{lexer: l, errors: []string{}}
 
@@ -76,6 +84,7 @@ func New(l *lexer.Lexer) *Parser {
 	return p
 }
 
+// Errors returns the errors that occured during the semantic analysis.
 func (p *Parser) Errors() []string {
 	return p.errors
 }
@@ -93,6 +102,7 @@ func (p *Parser) registerInfix(tokenType token.Type, fn infixParseFunc) {
 	p.infixParseFuncs[tokenType] = fn
 }
 
+// ParseProgram starts the actual analysis of Lexer's program.
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 	program.Statements = []ast.Statement{}

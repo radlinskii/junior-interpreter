@@ -9,8 +9,10 @@ import (
 	"github.com/radlinskii/interpreter/token"
 )
 
+// PROMPT defines how the REPL's prompt will look like.
 const PROMPT = "👉  "
 
+// Start runs the REPL loop.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 

@@ -2,6 +2,7 @@ package lexer
 
 import "github.com/radlinskii/interpreter/token"
 
+// Lexer is a struct representing the lexical analyzer.
 type Lexer struct {
 	input        string
 	position     int
@@ -10,6 +11,7 @@ type Lexer struct {
 	RowNum       int
 }
 
+// New creates new instance of the Lexer.
 func New(input string) *Lexer {
 	l := &Lexer{input: input, RowNum: 1}
 	l.readChar()
@@ -42,8 +44,8 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
+// NextToken analyzes text and returns the first token it founds.
 func (l *Lexer) NextToken() (tok token.Token) {
-
 	l.skipWhitespace()
 
 	switch l.ch {

@@ -1,7 +1,10 @@
 package ast
 
-import "testing"
-import "github.com/radlinskii/interpreter/token"
+import (
+	"testing"
+
+	"github.com/radlinskii/interpreter/token"
+)
 
 func TestString(t *testing.T) {
 	program := &Program{

@@ -7,10 +7,11 @@ type Lexer struct {
 	position     int
 	nextPosition int
 	ch           byte
+	RowNum       int
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{input: input, RowNum: 1}
 	l.readChar()
 	return l
 }
@@ -35,6 +36,9 @@ func (l *Lexer) peekChar() byte {
 
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		if l.ch == '\n' || l.ch == '\r' {
+			l.RowNum++
+		}
 		l.readChar()
 	}
 }

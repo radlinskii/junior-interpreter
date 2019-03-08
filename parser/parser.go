@@ -136,7 +136,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 }
 
 func (p *Parser) peekError(t token.TokenType) {
-	msg := fmt.Sprintf("Expected next token to be '%s', got '%s' instead.\n", t, p.peekToken.Type)
+	msg := fmt.Sprintf("Unexpected token %s on line %d, expected %s.\n", p.peekToken.Type, p.lexer.RowNum, t)
 
 	p.errors = append(p.errors, msg)
 }

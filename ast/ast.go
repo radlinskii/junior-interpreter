@@ -78,23 +78,6 @@ func (vs *VarStatement) String() string {
 	return out.String()
 }
 
-// Identifier is a AST node representing identifier token.
-type Identifier struct {
-	Token token.Token
-	Value string
-}
-
-func (i *Identifier) expressionNode() {}
-
-// TokenLiteral returns the Identifier's token.
-func (i *Identifier) TokenLiteral() string {
-	return i.Token.Literal
-}
-
-func (i *Identifier) String() string {
-	return i.Value
-}
-
 // ReturnStatement is a AST node representing "return" token.
 type ReturnStatement struct {
 	Token       token.Token
@@ -142,6 +125,46 @@ func (es *ExpressionStatement) String() string {
 	}
 
 	return ""
+}
+
+// BlockStatement holds multiple statements together
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}
+
+func (bs *BlockStatement) statementNode() {}
+
+// TokenLiteral returns the BlockStatement's token.
+func (bs *BlockStatement) TokenLiteral() string {
+	return bs.Token.Literal
+}
+
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+
+	for _, s := range bs.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
+}
+
+// Identifier is a AST node representing identifier token.
+type Identifier struct {
+	Token token.Token
+	Value string
+}
+
+func (i *Identifier) expressionNode() {}
+
+// TokenLiteral returns the Identifier's token.
+func (i *Identifier) TokenLiteral() string {
+	return i.Token.Literal
+}
+
+func (i *Identifier) String() string {
+	return i.Value
 }
 
 // IntegerLiteral is a AST node representing integer token.
@@ -226,6 +249,36 @@ func (ie *InfixExpression) String() string {
 	out.WriteString(" " + ie.Operator + " ")
 	out.WriteString(ie.Right.String())
 	out.WriteString(")")
+
+	return out.String()
+}
+
+// IfExpression is a AST node representing  infix expression, e.g. 1 + 2.
+type IfExpression struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ie *IfExpression) expressionNode() {}
+
+// TokenLiteral returns the IfExpression's token.
+func (ie *IfExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+
+func (ie *IfExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if")
+	out.WriteString(ie.Condition.String() + " ")
+	out.WriteString(ie.Consequence.String())
+
+	if ie.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(ie.Alternative.String())
+	}
 
 	return out.String()
 }

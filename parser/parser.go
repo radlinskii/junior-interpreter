@@ -79,12 +79,16 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.prefixParseFuncs = make(map[token.Type]prefixParseFunc)
 	p.infixParseFuncs = make(map[token.Type]infixParseFunc)
+
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.TRUE, p.parseBooleanLiteral)
 	p.registerPrefix(token.FALSE, p.parseBooleanLiteral)
+
+	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+
 	p.registerInfix(token.EQ, p.parseInfixExpression)
 	p.registerInfix(token.NEQ, p.parseInfixExpression)
 	p.registerInfix(token.LTE, p.parseInfixExpression)
@@ -233,6 +237,18 @@ func (p *Parser) peekPrecedence() int {
 		return p
 	}
 	return LOWEST
+}
+
+func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.nextToken()
+
+	exp := p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return exp
 }
 
 // Together with parsePrefixExpression and parseInfixExpression, parseExpression creates recursively the AST tree.

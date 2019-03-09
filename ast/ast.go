@@ -161,6 +161,23 @@ func (il *IntegerLiteral) String() string {
 	return il.Token.Literal
 }
 
+// BooleanLiteral is a AST node representing boolean token.
+type BooleanLiteral struct {
+	Token token.Token
+	Value bool
+}
+
+func (bl *BooleanLiteral) expressionNode() {}
+
+// TokenLiteral returns the BooleanLiteral's token.
+func (bl *BooleanLiteral) TokenLiteral() string {
+	return bl.Token.Literal
+}
+
+func (bl *BooleanLiteral) String() string {
+	return bl.Token.Literal
+}
+
 // PrefixExpression is a AST node representing  prefix expression, e.g. -1.
 type PrefixExpression struct {
 	Token    token.Token

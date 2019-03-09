@@ -18,6 +18,8 @@ func New(input string) *Lexer {
 	return l
 }
 
+// Reads next char from the input.
+// Increments values of position and nextPositon and advances the current character.
 func (l *Lexer) readChar() {
 	if l.nextPosition >= len(l.input) {
 		l.ch = 0
@@ -28,6 +30,7 @@ func (l *Lexer) readChar() {
 	l.nextPosition++
 }
 
+// Returns next character from the input.
 func (l *Lexer) peekChar() byte {
 	if l.nextPosition >= len(l.input) {
 		return 0
@@ -103,6 +106,7 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	default:
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdent()
+			// check if the read identifier is a keyword
 			tok.Type = token.LookUpIdent(tok.Literal)
 			return tok
 		} else if isDigit(l.ch) {
@@ -117,6 +121,7 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	return tok
 }
 
+// Keep reading input as long as it's a word.
 func (l *Lexer) readIdent() string {
 	position := l.position
 	for isLetter(l.ch) {
@@ -125,6 +130,7 @@ func (l *Lexer) readIdent() string {
 	return l.input[position:l.position]
 }
 
+// Keep reading as long as the input's a number.
 func (l *Lexer) readNumber() string {
 	position := l.position
 	for isDigit(l.ch) {
@@ -141,6 +147,7 @@ func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+// create new token with given values
 func newToken(tokenType token.Type, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }

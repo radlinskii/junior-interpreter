@@ -12,10 +12,8 @@ type Token struct {
 const (
 	// ILLEGAL token is created when symbols not belonging to our language are found.
 	ILLEGAL = "ILLEGAL"
-
 	// EOF - end of file
 	EOF = "EOF"
-
 	// IDENT - identifier
 	IDENT = "IDENT"
 

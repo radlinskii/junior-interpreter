@@ -12,5 +12,6 @@ Code of interpreter for C-based programming language following the [writing an i
 - [x] counting rows
 - [ ] counting columns
 - [ ] running with file as a argument
-- [ ] comments
+- [x] one-line comments
+- [ ] multiple-lines comments
 - [ ] checking if newline was in the right place e.g. after "{" ??

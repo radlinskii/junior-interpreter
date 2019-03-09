@@ -37,7 +37,9 @@ func TestNextToken1(t *testing.T) {
 }
 
 func TestNextToken2(t *testing.T) {
-	input := `var five = 5;var ten = 10;
+	input := `
+	var five = 5; // some one line comment
+	var ten = 10;
 
 	var add = fun(x, y) {
 		return x + y;
@@ -142,11 +144,13 @@ func TestNextToken3(t *testing.T) {
 }
 
 func TestNextToken4(t *testing.T) {
-	input := `if (five < 6) {
-		return true;
+	input := `// one line comment at the beginning of input
+	if (five < 6) {
+		return true; // one line comment in the middle of input
 	} else {
 		return false;
-	}`
+	}
+	// one line comment at the end of input`
 
 	tests := []struct {
 		expectedType    token.Type

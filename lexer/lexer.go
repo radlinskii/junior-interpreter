@@ -47,6 +47,15 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
+func (l *Lexer) skipOneLineComment() {
+	for l.ch != '\n' && l.ch != '\r' && l.ch != 0 {
+		l.readChar()
+	}
+	if l.ch == '\n' || l.ch == '\r' {
+		l.RowNum++
+	}
+}
+
 // NextToken analyzes text and returns the first token it founds.
 func (l *Lexer) NextToken() (tok token.Token) {
 	l.skipWhitespace()
@@ -73,6 +82,10 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case '*':
 		tok = newToken(token.ASTERISK, l.ch)
 	case '/':
+		if l.peekChar() == '/' {
+			l.skipOneLineComment()
+			return l.NextToken()
+		}
 		tok = newToken(token.SLASH, l.ch)
 	case '<':
 		if l.peekChar() == '=' {

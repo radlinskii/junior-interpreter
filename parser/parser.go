@@ -84,7 +84,7 @@ func New(l *lexer.Lexer) *Parser {
 	return p
 }
 
-// Errors returns the errors that occured during the semantic analysis.
+// Errors returns the errors that occurred during the semantic analysis.
 func (p *Parser) Errors() []string {
 	return p.errors
 }

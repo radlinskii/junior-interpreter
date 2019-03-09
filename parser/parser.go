@@ -56,6 +56,19 @@ type Parser struct {
 	infixParseFuncs  map[token.Type]infixParseFunc
 }
 
+func (p *Parser) nextToken() {
+	p.curToken = p.peekToken
+	p.peekToken = p.lexer.NextToken()
+}
+
+func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFunc) {
+	p.prefixParseFuncs[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.Type, fn infixParseFunc) {
+	p.infixParseFuncs[tokenType] = fn
+}
+
 // New creates new Parser with given lexical analyzer object.
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{lexer: l, errors: []string{}}
@@ -84,24 +97,6 @@ func New(l *lexer.Lexer) *Parser {
 	return p
 }
 
-// Errors returns the errors that occured during the semantic analysis.
-func (p *Parser) Errors() []string {
-	return p.errors
-}
-
-func (p *Parser) nextToken() {
-	p.curToken = p.peekToken
-	p.peekToken = p.lexer.NextToken()
-}
-
-func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFunc) {
-	p.prefixParseFuncs[tokenType] = fn
-}
-
-func (p *Parser) registerInfix(tokenType token.Type, fn infixParseFunc) {
-	p.infixParseFuncs[tokenType] = fn
-}
-
 // ParseProgram starts the actual analysis of Lexer's program.
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
@@ -118,10 +113,17 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
+// Errors returns the errors that occurred during the semantic analysis.
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+// returns Identifier AST node created from current token
 func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
+// returns Statement AST node created from current and following tokens.
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.VAR:
@@ -133,6 +135,35 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
+// checks if current token is of given type
+func (p *Parser) curTokenIs(t token.Type) bool {
+	return p.curToken.Type == t
+}
+
+// checks if next token is of given type
+func (p *Parser) peekTokenIs(t token.Type) bool {
+	return p.peekToken.Type == t
+}
+
+// checks if next token is of given type
+// creates a peekError if next token isn't the expected one
+func (p *Parser) expectPeek(t token.Type) bool {
+	if p.peekTokenIs(t) {
+		p.nextToken()
+		return true
+	}
+	p.peekError(t)
+	return false
+}
+
+// creates an error and adds it to the parser errors list
+func (p *Parser) peekError(t token.Type) {
+	msg := fmt.Sprintf("Unexpected token %s on line %d, expected %s.\n", p.peekToken.Type, p.lexer.RowNum, t)
+
+	p.errors = append(p.errors, msg)
+}
+
+// parses production of var statement --> "var" <ident> "=" <expression> ";"
 func (p *Parser) parseVarStatement() ast.Statement {
 	stmnt := &ast.VarStatement{Token: p.curToken}
 
@@ -154,43 +185,7 @@ func (p *Parser) parseVarStatement() ast.Statement {
 	return stmnt
 }
 
-func (p *Parser) curPrecedence() int {
-	if p, ok := precedences[p.curToken.Type]; ok {
-		return p
-	}
-	return LOWEST
-}
-
-func (p *Parser) peekPrecedence() int {
-	if p, ok := precedences[p.peekToken.Type]; ok {
-		return p
-	}
-	return LOWEST
-}
-
-func (p *Parser) curTokenIs(t token.Type) bool {
-	return p.curToken.Type == t
-}
-
-func (p *Parser) peekTokenIs(t token.Type) bool {
-	return p.peekToken.Type == t
-}
-
-func (p *Parser) expectPeek(t token.Type) bool {
-	if p.peekTokenIs(t) {
-		p.nextToken()
-		return true
-	}
-	p.peekError(t)
-	return false
-}
-
-func (p *Parser) peekError(t token.Type) {
-	msg := fmt.Sprintf("Unexpected token %s on line %d, expected %s.\n", p.peekToken.Type, p.lexer.RowNum, t)
-
-	p.errors = append(p.errors, msg)
-}
-
+// parses production of return statement --> "return" <expression> ";"
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmnt := &ast.ReturnStatement{Token: p.curToken}
 
@@ -204,6 +199,9 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmnt
 }
 
+// Creates and returns ExpressionStatement from current token,
+// it calls parseExpression to assign it to Expression property of the new ExpresisonStatement.
+// Sets precedence to lowest since it's the most outer expression in the whole statement.
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmnt := &ast.ExpressionStatement{Token: p.curToken}
 
@@ -217,6 +215,27 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmnt
 }
 
+// Checks precedence of current token,
+// if not defined in the precedence map returns lowest precedence.
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+
+// Checks precedence of next token,
+// if not defined in the precedence map returns lowest precedence.
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+
+// Together with parsePrefixExpression and parseInfixExpression, parseExpression creates recursively the AST tree.
+// parseExpression starts with creating left-hand side of the each node.
+// Then, it continuously tries to parse the right side expression.
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefixFunc := p.prefixParseFuncs[p.curToken.Type]
 	if prefixFunc == nil {
@@ -239,11 +258,14 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	return leftExp
 }
 
+// Returns a error message if wrong operator was used as prefix operator. e.g. in "*5;" statement.
 func (p *Parser) noPrefixParseFuncError(t token.Type) {
 	msg := fmt.Sprintf("no prefix parse function for %s found", t)
 	p.errors = append(p.errors, msg)
 }
 
+// Creates a PrefixExpression with current token as prefix operator
+// and expression as the right side of the PrefixExpression starting from next token. --> "!<expression>"
 func (p *Parser) parsePrefixExpression() ast.Expression {
 	expression := &ast.PrefixExpression{
 		Token:    p.curToken,
@@ -257,6 +279,9 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	return expression
 }
 
+// It's given left side expression as an argument.
+// It creates InfixExpression with given expression on the left and current token as the operator.
+// Then it calls parseExpression with precedence of the current operator to assign it on it's right side.
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,
@@ -271,6 +296,7 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	return expression
 }
 
+// Parses integer tokens into the IntegerLiterals AST nodes.
 func (p *Parser) parseIntegerLiteral() ast.Expression {
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 

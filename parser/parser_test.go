@@ -65,7 +65,6 @@ func TestVarStatements(t *testing.T) {
 }
 
 func testVarStatement(t *testing.T, s ast.Statement, name string) bool {
-	t.Log(name)
 	if s.TokenLiteral() != "var" {
 		t.Errorf("s.TokenLiteral not 'var'. got='%q'", s.TokenLiteral())
 		return false
@@ -270,6 +269,86 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		if actual != tt.expected {
 			t.Errorf("expected=%q, got=%q", tt.expected, actual)
 		}
+	}
+}
+
+func TestIfExpression(t *testing.T) {
+	input := `
+	if (x < y) {
+		x;
+	}`
+
+	program := testParsingInput(t, input, 1)
+
+	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.Expression. got=%T", program.Statements[0])
+	}
+
+	exp, ok := stmnt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("stmnt.Expression is not *ast.IfExpression. got=%T", stmnt.Expression)
+	}
+
+	if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
+		return
+	}
+
+	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Errorf("exp.Consequence.Statements[0] is not *ast.ExpressionStatement. got=%T", exp.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "x") {
+		return
+	}
+
+	if exp.Alternative != nil {
+		t.Errorf("exp.Alternative was not nil. got=%+v", exp.Alternative)
+	}
+
+}
+
+func TestIfElseExpression(t *testing.T) {
+	input := `
+	if (x < y) {
+		x;
+	} else {
+		y;
+	}`
+
+	program := testParsingInput(t, input, 1)
+
+	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.Expression. got=%T", program.Statements[0])
+	}
+
+	exp, ok := stmnt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("stmnt.Expression is not *ast.IfExpression. got=%T", stmnt.Expression)
+	}
+
+	if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
+		return
+	}
+
+	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Errorf("exp.Consequence.Statements[0] is not *ast.ExpressionStatement. got=%T", exp.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "x") {
+		return
+	}
+
+	alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Errorf("exp.Alternative.Statements[0] is not *ast.ExpressionStatement. got=%T", exp.Alternative.Statements[0])
+	}
+
+	if !testIdentifier(t, alternative.Expression, "y") {
+		return
 	}
 }
 

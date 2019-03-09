@@ -23,7 +23,7 @@ const (
 	PRODUCT
 	// PREFIX == 6 precedence for operators ["prefixed" -,!]
 	PREFIX
-	// CALL == 6 precedence for operator (
+	// CALL == 7 precedence for operator (
 	CALL
 )
 
@@ -81,11 +81,13 @@ func New(l *lexer.Lexer) *Parser {
 	p.infixParseFuncs = make(map[token.Type]infixParseFunc)
 
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	p.registerPrefix(token.IF, p.parseIfExpression)
+
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.TRUE, p.parseBooleanLiteral)
 	p.registerPrefix(token.FALSE, p.parseBooleanLiteral)
-
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
+
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 
@@ -207,7 +209,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 // Creates and returns ExpressionStatement from current token,
 // it calls parseExpression to assign it to Expression property of the new ExpresisonStatement.
-// Sets precedence to lowest since it's the most outer expression in the whole statement.
+// Sets precedence to the lowest since it's the most outer expression in the whole statement.
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmnt := &ast.ExpressionStatement{Token: p.curToken}
 
@@ -249,6 +251,56 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	}
 
 	return exp
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	exp := &ast.IfExpression{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+	exp.Condition = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	exp.Consequence = p.parseBlockStatement()
+
+	if p.peekTokenIs(token.ELSE) {
+		p.nextToken()
+
+		if !p.expectPeek(token.LBRACE) {
+			return nil
+		}
+
+		exp.Alternative = p.parseBlockStatement()
+	}
+
+	return exp
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: p.curToken}
+	block.Statements = []ast.Statement{}
+
+	p.nextToken()
+
+	for !p.curTokenIs(token.RBRACE) {
+		stmnt := p.parseStatement()
+		if stmnt != nil {
+			block.Statements = append(block.Statements, stmnt)
+		}
+		p.nextToken()
+	}
+
+	return block
 }
 
 // Together with parsePrefixExpression and parseInfixExpression, parseExpression creates recursively the AST tree.

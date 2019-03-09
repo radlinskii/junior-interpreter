@@ -469,3 +469,64 @@ func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
 
 	return true
 }
+
+func TestFunctionLiteral(t *testing.T) {
+	input := `fun(x,y) {x + y;}`
+
+	program := testParsingInput(t, input, 1)
+
+	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	function, ok := stmnt.Expression.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("smnt.Expression is not *ast.FunctionalExpression. got=%T", stmnt.Expression)
+	}
+
+	if len(function.Parameters) != 2 {
+		t.Fatalf("expected 2 function parameters. got=%d", len(function.Parameters))
+	}
+
+	testLiteralExpression(t, function.Parameters[0], "x")
+	testLiteralExpression(t, function.Parameters[1], "y")
+
+	if len(function.Body.Statements) != 1 {
+		t.Fatalf("function.Body.Statements length expected to be 1. got=%d", len(function.Body.Statements))
+	}
+
+	bodyStmnt, ok := function.Body.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("function body statement is not ast.ExpressionStatement. got=%T", function.Body.Statements[0])
+	}
+
+	testInfixExpression(t, bodyStmnt.Expression, "x", "+", "y")
+}
+
+func TestFunctionParametersParsing(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedParams []string
+	}{
+		{input: "fun() {};", expectedParams: []string{}},
+		{input: "fun(x) {};", expectedParams: []string{"x"}},
+		{input: "fun(x,y) {};", expectedParams: []string{"x", "y"}},
+		{input: "fun(x,y,z) {};", expectedParams: []string{"x", "y", "z"}},
+	}
+
+	for _, tt := range tests {
+		program := testParsingInput(t, tt.input, 1)
+
+		stmnt := program.Statements[0].(*ast.ExpressionStatement)
+		function := stmnt.Expression.(*ast.FunctionLiteral)
+
+		if len(function.Parameters) != len(tt.expectedParams) {
+			t.Errorf("parameters length wrong, want %d. got=%d", len(tt.expectedParams), len(function.Parameters))
+		}
+
+		for i, ident := range tt.expectedParams {
+			testLiteralExpression(t, function.Parameters[i], ident)
+		}
+	}
+}

@@ -260,6 +260,9 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"10 / (5 + 5)", "(10 / (5 + 5))"},
 		{"-(2 + 3)", "(-(2 + 3))"},
 		{"!(true  == true)", "(!(true == true))"},
+		{"a + add(b * c) + d", "((a + add((b * c))) + d)"},
+		{"add(1,2+3,add(4,5))", "add(1, (2 + 3), add(4, 5))"},
+		{"add(a+b+c*d/f, g)", "add(((a + b) + ((c * d) / f)), g)"},
 	}
 
 	for _, tt := range tests {
@@ -529,4 +532,32 @@ func TestFunctionParametersParsing(t *testing.T) {
 			testLiteralExpression(t, function.Parameters[i], ident)
 		}
 	}
+}
+
+func TestCallExpressionParsing(t *testing.T) {
+	input := "add(1, 2*3, 4+5);"
+
+	program := testParsingInput(t, input, 1)
+
+	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	ce, ok := stmnt.Expression.(*ast.CallExpression)
+	if !ok {
+		t.Fatalf("smnt.Expression is not *ast.CallExpression. got=%T", stmnt.Expression)
+	}
+
+	if !testIdentifier(t, ce.Function, "add") {
+		return
+	}
+
+	if len(ce.Arguments) != 3 {
+		t.Fatalf("wrong length of arguments, expected 3. got=%d", len(ce.Arguments))
+	}
+
+	testLiteralExpression(t, ce.Arguments[0], 1)
+	testInfixExpression(t, ce.Arguments[1], 2, "*", 3)
+	testInfixExpression(t, ce.Arguments[2], 4, "+", 5)
 }

@@ -107,7 +107,7 @@ func TestNextToken2(t *testing.T) {
 }
 
 func TestNextToken3(t *testing.T) {
-	input := `!-/*5;
+	input := `!-*/5;
 	5 < 10 > 	5;`
 
 	tests := []struct {
@@ -116,8 +116,8 @@ func TestNextToken3(t *testing.T) {
 	}{
 		{token.BANG, "!"},
 		{token.MINUS, "-"},
-		{token.SLASH, "/"},
 		{token.ASTERISK, "*"},
+		{token.SLASH, "/"},
 		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
 		{token.INT, "5"},
@@ -206,6 +206,55 @@ func TestNextToken5(t *testing.T) {
 		{token.LPAREN, "("},
 		{token.IDENT, "ten"},
 		{token.NEQ, "!="},
+		{token.INT, "5"},
+		{token.RPAREN, ")"},
+		{token.LPAREN, "("},
+		{token.IDENT, "five"},
+		{token.LTE, "<="},
+		{token.INT, "6"},
+		{token.RPAREN, ")"},
+		{token.LPAREN, "("},
+		{token.IDENT, "ten"},
+		{token.GTE, ">="},
+		{token.INT, "10"},
+		{token.RPAREN, ")"},
+		{token.EOF, ""},
+	}
+
+	l := New(input)
+
+	for i, tt := range tests {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
+		}
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}
+
+func TestSkipMultilineComment(t *testing.T) {
+	input := `/* multiple
+	line
+	comment */
+	(five == 5)/*  multiple
+	line
+	comment */
+	/* /* /* */
+	(five <= 6) (ten >= 10)/*
+	multiple line
+	comment
+	*//****/`
+
+	tests := []struct {
+		expectedType    token.Type
+		expectedLiteral string
+	}{
+		{token.LPAREN, "("},
+		{token.IDENT, "five"},
+		{token.EQ, "=="},
 		{token.INT, "5"},
 		{token.RPAREN, ")"},
 		{token.LPAREN, "("},

@@ -1,6 +1,8 @@
 package lexer
 
-import "github.com/radlinskii/interpreter/token"
+import (
+	"github.com/radlinskii/interpreter/token"
+)
 
 // Lexer is a struct representing the lexical analyzer.
 type Lexer struct {
@@ -56,6 +58,28 @@ func (l *Lexer) skipOneLineComment() {
 	}
 }
 
+func (l *Lexer) skipMultipleLineComment() {
+	// skipping '/*'
+	l.readChar()
+	l.readChar()
+
+	for l.ch != 0 {
+		if l.ch == '*' {
+			if l.peekChar() == '/' {
+				l.readChar()
+				l.readChar()
+				return
+			}
+		}
+
+		if l.ch == '\n' || l.ch == '\r' {
+			l.RowNum++
+		}
+		l.readChar()
+	}
+	// todo: error if comment is not finished
+}
+
 // NextToken analyzes text and returns the first token it founds.
 func (l *Lexer) NextToken() (tok token.Token) {
 	l.skipWhitespace()
@@ -84,6 +108,9 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case '/':
 		if l.peekChar() == '/' {
 			l.skipOneLineComment()
+			return l.NextToken()
+		} else if l.peekChar() == '*' {
+			l.skipMultipleLineComment()
 			return l.NextToken()
 		}
 		tok = newToken(token.SLASH, l.ch)

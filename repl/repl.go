@@ -26,8 +26,24 @@ func Start(in io.Reader, out io.Writer) {
 		line := scanner.Text()
 		l := lexer.New(line)
 
+		// RLPL - read lex print loop
 		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
 			fmt.Printf("%+v\n", tok)
 		}
+
+		// RPPL - read parse print loop
+		/* p := parser.New(l)
+
+		program := p.ParseProgram()
+
+		if len(p.Errors()) != 0 {
+			for _, msg := range p.Errors() {
+				io.WriteString(out, "\t"+msg+"\n")
+			}
+			continue
+		}
+
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n") */
 	}
 }

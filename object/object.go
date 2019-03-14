@@ -14,6 +14,8 @@ const (
 	BOOLEAN = "BOOLEAN"
 	// NULL object type
 	NULL = "NULL"
+	// RETURN object type
+	RETURN = "RETURN"
 )
 
 // Object interface is implemented by the objects.
@@ -63,4 +65,19 @@ func (n *Null) Inspect() string {
 // Type returns the null object type.
 func (n *Null) Type() Type {
 	return NULL
+}
+
+// Return object.
+type Return struct {
+	Value Object
+}
+
+// Inspect returns the value of object to be returned.
+func (rv *Return) Inspect() string {
+	return rv.Value.Inspect()
+}
+
+// Type returns the Return object type.
+func (rv *Return) Type() Type {
+	return RETURN
 }

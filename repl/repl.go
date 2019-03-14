@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/radlinskii/interpreter/evaluator"
+
 	"github.com/radlinskii/interpreter/lexer"
-	"github.com/radlinskii/interpreter/token"
+	"github.com/radlinskii/interpreter/parser"
 )
 
 // PROMPT defines how the REPL's prompt will look like.
@@ -25,15 +27,7 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
-
-		// RLPL - read lex print loop
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%+v\n", tok)
-		}
-
-		// RPPL - read parse print loop
-		/* p := parser.New(l)
-
+		p := parser.New(l)
 		program := p.ParseProgram()
 
 		if len(p.Errors()) != 0 {
@@ -43,7 +37,10 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n") */
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }

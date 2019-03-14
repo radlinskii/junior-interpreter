@@ -12,8 +12,9 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
+	env := object.NewEnvironment()
 
-	return Eval(program)
+	return Eval(program, env)
 }
 
 func TestEvalIntegerExpression(t *testing.T) {
@@ -197,6 +198,7 @@ func TestErrorHandling(t *testing.T) {
 		{"true + false;", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"5; true + false; 10;", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"if(10 > 1) { return true + false; }", "unknown operator: BOOLEAN + BOOLEAN"},
+		{"foobar;", "unknown identifier: foobar"},
 	}
 
 	for _, tt := range tests {
@@ -210,6 +212,26 @@ func TestErrorHandling(t *testing.T) {
 
 		if errObj.Message != tt.expectedMsg {
 			t.Errorf("wrong Error Message. expected=%q, got %q", tt.expectedMsg, errObj.Message)
+		}
+	}
+}
+
+func TestVarStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"var a = 5; a;", 5},
+		{"var a = 5 * 5; a", 25},
+		{"var a = 5; var b = a; b;", 5},
+		{"var a = 5; var b = a; var c = a + b + 5; c + 5;", 20},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		if !testIntegerObject(t, evaluated, tt.expected) {
+			return
 		}
 	}
 }

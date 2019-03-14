@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+
 	"github.com/radlinskii/interpreter/ast"
 	"github.com/radlinskii/interpreter/object"
 )
@@ -26,6 +28,9 @@ func Eval(node ast.Node) object.Object {
 		return evalBlockStatement(node)
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue)
+		if isError(val) {
+			return val
+		}
 		return &object.Return{Value: val}
 	//Expressions
 	case *ast.IntegerLiteral:
@@ -34,14 +39,23 @@ func Eval(node ast.Node) object.Object {
 		return evalBoolToBooleanObjectReference(node.Value)
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
 		left := Eval(node.Left)
+		if isError(left) {
+			return left
+		}
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.IfExpression:
 		return evalIfExpression(node)
-	default:
+	default: // TODO Error?
 		return nil
 	}
 }
@@ -52,8 +66,11 @@ func evalProgram(program *ast.Program) object.Object {
 	for _, stmnt := range program.Statements {
 		result = Eval(stmnt)
 
-		if rtrn, ok := result.(*object.Return); ok {
-			return rtrn.Value
+		switch result := result.(type) {
+		case *object.Return:
+			return result.Value
+		case *object.Error:
+			return result
 		}
 	}
 
@@ -66,8 +83,11 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 	for _, stmnt := range block.Statements {
 		result = Eval(stmnt)
 
-		if result != nil && result.Type() == object.RETURN {
-			return result
+		if result != nil {
+			rt := result.Type()
+			if rt == object.RETURN || rt == object.ERROR {
+				return result
+			}
 		}
 	}
 
@@ -81,7 +101,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
 	default:
-		return NULL // TODO throw error??
+		return newError("unknown operator: %s%s", operator, right.Type())
 	}
 }
 
@@ -94,13 +114,13 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 	case NULL:
 		return TRUE
 	default:
-		return FALSE
+		return FALSE // TODO Error?
 	}
 }
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() != object.INTEGER {
-		return NULL // TODO would be better to throw an error
+		return newError("unknown operator: -%s", right.Type())
 	}
 
 	value := right.(*object.Integer).Value
@@ -109,6 +129,8 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
+	case left.Type() != right.Type(): // handling type mismatch error first
+		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
 	case left.Type() == object.INTEGER && right.Type() == object.INTEGER:
 		return evalIntegerInfixExpression(operator, left, right)
 	case operator == "==":
@@ -116,7 +138,7 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	case operator == "!=":
 		return evalBoolToBooleanObjectReference(left != right)
 	default:
-		return NULL // TODO throw error??
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -145,7 +167,7 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	case ">=":
 		return evalBoolToBooleanObjectReference(leftVal >= rightVal)
 	default:
-		return NULL // TODO definitely an error
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -158,14 +180,16 @@ func evalBoolToBooleanObjectReference(val bool) object.Object {
 
 func evalIfExpression(ie *ast.IfExpression) object.Object {
 	condition := Eval(ie.Condition)
-
+	if isError(condition) {
+		return condition
+	}
 	if isTruthy(condition) {
 		return Eval(ie.Consequence)
 	} else if ie.Alternative != nil {
 		return Eval(ie.Alternative)
 	}
 
-	return NULL
+	return NULL // TODO Error?
 }
 
 func isTruthy(obj object.Object) bool {
@@ -177,6 +201,17 @@ func isTruthy(obj object.Object) bool {
 	case TRUE:
 		return true
 	default:
-		return true // TODO ERROR non null type is used as condition
+		return true // TODO ERROR non boolean type is used as condition
 	}
+}
+
+func newError(format string, a ...interface{}) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+
+func isError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.ERROR
+	}
+	return false
 }

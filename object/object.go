@@ -14,8 +14,10 @@ const (
 	BOOLEAN = "BOOLEAN"
 	// NULL object type
 	NULL = "NULL"
-	// RETURN object type
+	// RETURN object wrapper type
 	RETURN = "RETURN"
+	// ERROR object type
+	ERROR = "ERROR"
 )
 
 // Object interface is implemented by the objects.
@@ -67,7 +69,7 @@ func (n *Null) Type() Type {
 	return NULL
 }
 
-// Return object.
+// Return object is a wrapper to a object that gets returned.
 type Return struct {
 	Value Object
 }
@@ -80,4 +82,19 @@ func (rv *Return) Inspect() string {
 // Type returns the Return object type.
 func (rv *Return) Type() Type {
 	return RETURN
+}
+
+// Error object.
+type Error struct {
+	Message string
+}
+
+// Inspect returns error message.
+func (e *Error) Inspect() string {
+	return "ERROR: " + e.Message
+}
+
+// Type returns the Error object type.
+func (e *Error) Type() Type {
+	return ERROR
 }

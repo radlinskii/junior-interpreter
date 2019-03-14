@@ -63,6 +63,20 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalIfExpression(node, env)
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
+	case *ast.FunctionLiteral:
+		params := node.Parameters
+		body := node.Body
+		return &object.Function{Parameters: params, Env: env, Body: body}
+	case *ast.CallExpression:
+		fun := Eval(node.Function, env)
+		if isError(fun) {
+			return fun
+		}
+		args := evalExpressions(node.Arguments, env)
+		if len(args) == 1 && isError(args[0]) {
+			return args[0]
+		}
+		return applyFunction(fun, args)
 	default: // TODO Error?
 		return nil
 	}
@@ -219,6 +233,48 @@ func evalIdentifier(i *ast.Identifier, env *object.Environment) object.Object {
 		return newError("unknown identifier: %s", i.Value)
 	}
 	return val
+}
+
+func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
+	var result []object.Object
+
+	for _, e := range exps {
+		evaluated := Eval(e, env)
+		if isError(evaluated) {
+			return []object.Object{evaluated}
+		}
+		result = append(result, evaluated)
+	}
+
+	return result
+}
+
+func applyFunction(fun object.Object, args []object.Object) object.Object {
+	function, ok := fun.(*object.Function)
+	if !ok {
+		return newError("not a function: %s", function.Type())
+	}
+	extendedEnv := extendedFunctionEnv(function, args)
+	evaluated := Eval(function.Body, extendedEnv) // TODO ERROR??
+	return unwrapReturnValue(evaluated)
+}
+
+func extendedFunctionEnv(fun *object.Function, args []object.Object) *object.Environment {
+	env := object.NewEnclosedEnvironment(fun.Env)
+
+	for paramIdx, param := range fun.Parameters {
+		env.Set(param.Value, args[paramIdx])
+	}
+
+	return env
+}
+
+func unwrapReturnValue(obj object.Object) object.Object {
+	if rtrn, ok := obj.(*object.Return); ok {
+		return rtrn.Value
+	}
+
+	return obj
 }
 
 func newError(format string, a ...interface{}) *object.Error {

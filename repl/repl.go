@@ -1,9 +1,11 @@
-package repl
+package main
 
 import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
+	"os/user"
 
 	"github.com/radlinskii/interpreter/object"
 
@@ -46,4 +48,16 @@ func Start(in io.Reader, out io.Writer) {
 			io.WriteString(out, "\n")
 		}
 	}
+}
+
+func main() {
+	user, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Hello %s! This is the Monkey programming language!\n", user.Username)
+
+	fmt.Println("Feel free to type in commands")
+	Start(os.Stdin, os.Stdout)
 }

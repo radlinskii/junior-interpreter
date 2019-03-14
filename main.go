@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
+	"os"
 
 	"github.com/radlinskii/interpreter/evaluator"
 	"github.com/radlinskii/interpreter/lexer"
@@ -12,9 +12,19 @@ import (
 )
 
 func main() {
-	data, err := ioutil.ReadFile("example.monkey")
+	switch {
+	case len(os.Args) == 1:
+		fmt.Println("Please specify the file to be interpreted")
+		os.Exit(1)
+	case len(os.Args) > 2:
+		fmt.Println("Please specify only one file to be interpreted")
+		os.Exit(1)
+	}
+
+	data, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
-		log.Fatalf(err.Error())
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 	input := string(data)
 	l := lexer.New(input)

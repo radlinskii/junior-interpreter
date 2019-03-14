@@ -26,16 +26,17 @@ func Eval(node ast.Node) object.Object {
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 	case *ast.BooleanLiteral:
-		if node.Value {
-			return TRUE
-		}
-		return FALSE
+		return evalBoolToBooleanObjectReference(node.Value)
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
 		return evalPrefixExpression(node.Operator, right)
+	case *ast.InfixExpression:
+		left := Eval(node.Left)
+		right := Eval(node.Right)
+		return evalInfixExpression(node.Operator, left, right)
+	default:
+		return nil
 	}
-
-	return nil
 }
 
 func evalStatements(stmnts []ast.Statement) object.Object {
@@ -57,7 +58,6 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	default:
 		return NULL // TODO throw error??
 	}
-
 }
 
 func evalBangOperatorExpression(right object.Object) object.Object {
@@ -80,4 +80,53 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 
 	value := right.(*object.Integer).Value
 	return &object.Integer{Value: -value}
+}
+
+func evalInfixExpression(operator string, left, right object.Object) object.Object {
+	switch {
+	case left.Type() == object.INTEGER && right.Type() == object.INTEGER:
+		return evalIntegerInfixExpression(operator, left, right)
+	case operator == "==":
+		return evalBoolToBooleanObjectReference(left == right)
+	case operator == "!=":
+		return evalBoolToBooleanObjectReference(left != right)
+	default:
+		return NULL // TODO throw error??
+	}
+}
+
+func evalIntegerInfixExpression(operator string, left, right object.Object) object.Object {
+	leftVal := left.(*object.Integer).Value
+	rightVal := right.(*object.Integer).Value
+	switch operator {
+	case "+":
+		return &object.Integer{Value: leftVal + rightVal}
+	case "-":
+		return &object.Integer{Value: leftVal - rightVal}
+	case "*":
+		return &object.Integer{Value: leftVal * rightVal}
+	case "/":
+		return &object.Integer{Value: leftVal / rightVal}
+	case "<":
+		return evalBoolToBooleanObjectReference(leftVal < rightVal)
+	case ">":
+		return evalBoolToBooleanObjectReference(leftVal > rightVal)
+	case "==":
+		return evalBoolToBooleanObjectReference(leftVal == rightVal)
+	case "!=":
+		return evalBoolToBooleanObjectReference(leftVal != rightVal)
+	case "<=":
+		return evalBoolToBooleanObjectReference(leftVal <= rightVal)
+	case ">=":
+		return evalBoolToBooleanObjectReference(leftVal >= rightVal)
+	default:
+		return NULL // TODO definitely an error
+	}
+}
+
+func evalBoolToBooleanObjectReference(val bool) object.Object {
+	if val {
+		return TRUE
+	}
+	return FALSE
 }

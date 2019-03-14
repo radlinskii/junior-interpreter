@@ -236,6 +236,67 @@ func TestVarStatements(t *testing.T) {
 	}
 }
 
+func TestFunctionObject(t *testing.T) {
+	input := "fun(x) { return x + 2; }"
+	expectedBody := "return (x + 2);"
+
+	evaluated := testEval(input)
+	fun, ok := evaluated.(*object.Function)
+	if !ok {
+		t.Fatalf("object is not a Function. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if len(fun.Parameters) != 1 {
+		t.Fatalf("function has wrong number of parameters. Parameters=%+v", fun.Parameters)
+	}
+
+	if fun.Parameters[0].String() != "x" {
+		t.Fatalf("parameter is not 'x'. got=%q", fun.Parameters[0])
+	}
+
+	if fun.Body.String() != expectedBody {
+		t.Fatalf("body is not %q. got=%q", expectedBody, fun.Body.String())
+	}
+}
+
+func TestFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"var identity = fun(x) { x; } identity(5);", 5},
+		{"var identity = fun(x) { return x; } identity(5);", 5},
+		{"var double = fun(x) { return x * 2; } double(5);", 10},
+		{"var add = fun(x, y) { return x + y; } add(5, 10);", 15},
+		{"var add = fun(x, y) { return x + y; } add(5, add(6, 4));", 15},
+		{"fun(x) { return x; }(99);", 99},
+	}
+
+	for _, tt := range tests {
+		if !testIntegerObject(t, testEval(tt.input), tt.expected) {
+			return
+		}
+	}
+}
+
+func TestClosures(t *testing.T) {
+	input := `
+		var newAdder = fun(x) {
+			return fun(y) {
+				return x + y;
+			};
+		};
+
+		var addFive = newAdder(5);
+		addFive(5);
+	`
+	expected := 10
+
+	if !testIntegerObject(t, testEval(input), int64(expected)) {
+		return
+	}
+}
+
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {

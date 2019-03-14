@@ -1,7 +1,11 @@
 package object
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
+
+	"github.com/radlinskii/interpreter/ast"
 )
 
 // Type represents different object types.
@@ -18,6 +22,8 @@ const (
 	RETURN = "RETURN"
 	// ERROR object type
 	ERROR = "ERROR"
+	// FUNCTION object type
+	FUNCTION = "FUNCTION"
 )
 
 // Object interface is implemented by the objects.
@@ -99,21 +105,61 @@ func (e *Error) Type() Type {
 	return ERROR
 }
 
+// Function object.
+type Function struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+// Inspect returns the Function object image.
+func (f *Function) Inspect() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range f.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString("fun(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(f.Body.String())
+
+	return out.String()
+}
+
+// Type returns the Function object type.
+func (f *Function) Type() Type {
+	return FUNCTION
+}
+
 // Environment is a map of known objects.
 type Environment struct {
 	store map[string]Object
+	outer *Environment
 }
 
 // NewEnvironment returns new Environment instance
 func NewEnvironment() *Environment {
 	s := make(map[string]Object)
-	return &Environment{store: s}
+	return &Environment{store: s, outer: nil}
+}
+
+// NewEnclosedEnvironment returns new Environment instance
+func NewEnclosedEnvironment(outer *Environment) *Environment {
+	env := NewEnvironment()
+	env.outer = outer
+	return env
 }
 
 // Get returns value of given key from Enviroment's map.
-func (e *Environment) Get(name string) (obj Object, ok bool) {
-	obj, ok = e.store[name]
-	return
+func (e *Environment) Get(name string) (Object, bool) {
+	obj, ok := e.store[name]
+	if !ok && e.outer != nil {
+		obj, ok = e.outer.Get(name)
+	}
+	return obj, ok
 }
 
 // Set puts the value of given key in Enviroment's map.

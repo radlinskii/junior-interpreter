@@ -98,3 +98,26 @@ func (e *Error) Inspect() string {
 func (e *Error) Type() Type {
 	return ERROR
 }
+
+// Environment is a map of known objects.
+type Environment struct {
+	store map[string]Object
+}
+
+// NewEnvironment returns new Environment instance
+func NewEnvironment() *Environment {
+	s := make(map[string]Object)
+	return &Environment{store: s}
+}
+
+// Get returns value of given key from Enviroment's map.
+func (e *Environment) Get(name string) (obj Object, ok bool) {
+	obj, ok = e.store[name]
+	return
+}
+
+// Set puts the value of given key in Enviroment's map.
+func (e *Environment) Set(name string, val Object) Object {
+	e.store[name] = val
+	return val
+}

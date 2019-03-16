@@ -85,6 +85,16 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		right := Eval(node.Right, env)
+		if isError(right) {
+			return right
+		}
+		return evalIndexExpression(left, right)
 	default: // TODO Error?
 		return nil
 	}
@@ -262,6 +272,27 @@ func evalIdentifier(i *ast.Identifier, env *object.Environment) object.Object {
 	}
 
 	return newError("unknown identifier: %s", i.Value)
+}
+
+func evalIndexExpression(left, right object.Object) object.Object {
+	switch {
+	case left.Type() == object.ARRAY && right.Type() == object.INTEGER:
+		return evalArrayIndexExpression(left, right)
+	default:
+		return newError("index operator not supported: %s[%s]", left.Type(), right.Type())
+	}
+}
+
+func evalArrayIndexExpression(array, index object.Object) object.Object {
+	arrayObject := array.(*object.Array)
+	i := index.(*object.Integer).Value
+	max := int64(len(arrayObject.Elements) - 1)
+
+	if i < 0 || i > max {
+		return NULL // return newError("index out of boundaries")
+	}
+
+	return arrayObject.Elements[i]
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {

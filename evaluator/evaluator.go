@@ -247,11 +247,15 @@ func isTruthy(obj object.Object) bool {
 }
 
 func evalIdentifier(i *ast.Identifier, env *object.Environment) object.Object {
-	val, ok := env.Get(i.Value)
-	if !ok {
-		return newError("unknown identifier: %s", i.Value)
+	if val, ok := env.Get(i.Value); ok {
+		return val
 	}
-	return val
+
+	if builtin, ok := builtins[i.Value]; ok {
+		return builtin
+	}
+
+	return newError("unknown identifier: %s", i.Value)
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
@@ -269,13 +273,17 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 }
 
 func applyFunction(fun object.Object, args []object.Object) object.Object {
-	function, ok := fun.(*object.Function)
-	if !ok {
+
+	switch function := fun.(type) {
+	case *object.Function:
+		extendedEnv := extendedFunctionEnv(function, args)
+		evaluated := Eval(function.Body, extendedEnv) // TODO ERROR??
+		return unwrapReturnValue(evaluated)
+	case *object.Builtin:
+		return function.Fn(args...)
+	default:
 		return newError("not a function: %s", function.Type())
 	}
-	extendedEnv := extendedFunctionEnv(function, args)
-	evaluated := Eval(function.Body, extendedEnv) // TODO ERROR??
-	return unwrapReturnValue(evaluated)
 }
 
 func extendedFunctionEnv(fun *object.Function, args []object.Object) *object.Environment {

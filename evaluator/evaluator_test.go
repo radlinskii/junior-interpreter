@@ -199,6 +199,8 @@ func TestErrorHandling(t *testing.T) {
 		{"5; true + false; 10;", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"if(10 > 1) { return true + false; }", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"foobar;", "unknown identifier: foobar"},
+		{`"Hell" - "world"`, "unknown operator: STRING - STRING"},
+		{`5 + "worlds";`, "type mismatch: INTEGER + STRING"},
 	}
 
 	for _, tt := range tests {
@@ -344,4 +346,44 @@ func TestStringLiteral(t *testing.T) {
 	if str.Value != "Hello World" {
 		t.Errorf("String has wrong value. got=%q", str.Value)
 	}
+}
+
+func TestStringConcatenation(t *testing.T) {
+	input := `"Hello" + " World";`
+
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if str.Value != "Hello World" {
+		t.Errorf("String has wrong value. got=%q", str.Value)
+	}
+}
+
+func TestStringComparison(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`"hello" == "hello"`, true},
+		{`"hello" != "hello"`, false},
+		{`"hello" == " hello"`, false},
+		{`"hello" != " hello"`, true},
+		{`"hello" == "worlds"`, false},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		bl, ok := evaluated.(*object.Boolean)
+		if !ok {
+			t.Fatalf("object is not boolean. got=%T (%+v)", evaluated, evaluated)
+		}
+
+		if bl.Value != tt.expected {
+			t.Errorf("boolean has wrong value for %s. got=%t", tt.input, bl.Value)
+		}
+	}
+
 }

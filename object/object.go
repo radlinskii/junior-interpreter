@@ -26,6 +26,8 @@ const (
 	ERROR = "ERROR"
 	// FUNCTION object type
 	FUNCTION = "FUNCTION"
+	// BUILTIN object type
+	BUILTIN = "BUILTIN"
 )
 
 // Object interface is implemented by the objects.
@@ -33,6 +35,9 @@ type Object interface {
 	Inspect() string
 	Type() Type
 }
+
+// Built-in function
+type BuiltinFunction func(args ...Object) Object
 
 // Integer object.
 type Integer struct {
@@ -183,4 +188,16 @@ func (e *Environment) Get(name string) (Object, bool) {
 func (e *Environment) Set(name string, val Object) Object {
 	e.store[name] = val
 	return val
+}
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() Type {
+	return BUILTIN
+}
+
+func (b *Builtin) Inspect() string {
+	return "builtin function"
 }

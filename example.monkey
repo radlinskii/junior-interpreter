@@ -1,17 +1,18 @@
-var a = 5;
+// recursive function
+var factorial = fun(x) {
+    if (x < 1) {
+        return 1;
+    }
 
-var makeAdder = fun(x) {
-    return fun (y) {
-        return x + y;
-    };
+    return factorial(x - 1) * x;
 };
 
-var addTwo = makeAdder(2);
+var fiveFactorial = factorial(5); // 5!
 
-addTwo(a); // Output: 7
+// (120 / 4) / (3 * 2) == 5
+var five = fiveFactorial / 4 / (3 * 2);
 
-/*
-    1. a == 5
-    2. addTwo adds 2
-    3. addTwo(a) => 5 + 2 == 7
-*/
+// array with objects of different type
+var array = [0, 1, 1 + 1, true, "fifth element of an array"];
+
+array[five - 1];

@@ -578,12 +578,47 @@ func TestStringLiteralExpression(t *testing.T) {
 	if !ok {
 		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
 	}
-	literal, ok := stmnt.Expression.(*ast.StringLiteral)
+
+	if !testStringLiteral(t, stmnt.Expression, "hello world") {
+		return
+	}
+}
+
+func testStringLiteral(t *testing.T, exp ast.Expression, expected string) bool {
+	string, ok := exp.(*ast.StringLiteral)
 	if !ok {
-		t.Fatalf("exp not *ast.StringLiteral. got=%T", stmnt.Expression)
+		t.Errorf("exp not *ast.StringLiteral. got=%T", exp)
+		return false
 	}
 
-	if literal.Value != "hello world" {
-		t.Errorf("literal.Value not %q. got=%q", "hello world", literal.Value)
+	if string.Value != expected {
+		t.Errorf("string.Value not %q. got=%q", expected, string.Value)
+		return false
 	}
+
+	return true
+}
+
+func TestParsingArrayLiterals(t *testing.T) {
+	input := `[1, 2 * 2, true, "word"]`
+
+	program := testParsingInput(t, input, 1)
+
+	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+	array, ok := stmnt.Expression.(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.ArrayLiteral. got=%T", stmnt.Expression)
+	}
+
+	if len(array.Elements) != 4 {
+		t.Fatalf("len(array.Elements) not 4, got=%d", len(array.Elements))
+	}
+
+	testIntegerLiteral(t, array.Elements[0], 1)
+	testInfixExpression(t, array.Elements[1], 2, "*", 2)
+	testBooleanLiteral(t, array.Elements[2], true)
+	testStringLiteral(t, array.Elements[3], "word")
 }

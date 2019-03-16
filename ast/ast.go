@@ -202,6 +202,7 @@ func (bl *BooleanLiteral) String() string {
 	return bl.Token.Literal
 }
 
+// StringLiteral is a node representing a string.
 type StringLiteral struct {
 	Token token.Token
 	Value string
@@ -209,6 +210,7 @@ type StringLiteral struct {
 
 func (sl *StringLiteral) expressionNode() {}
 
+// TokenLiteral returns the string value
 func (sl *StringLiteral) TokenLiteral() string {
 	return sl.Token.Literal
 }

@@ -36,7 +36,7 @@ type Object interface {
 	Type() Type
 }
 
-// Built-in function
+// BuiltinFunction is a built-in function type.
 type BuiltinFunction func(args ...Object) Object
 
 // Integer object.
@@ -190,14 +190,17 @@ func (e *Environment) Set(name string, val Object) Object {
 	return val
 }
 
+// Builtin is a wrapper over built-in function.
 type Builtin struct {
 	Fn BuiltinFunction
 }
 
+// Type returns the built-ins' type
 func (b *Builtin) Type() Type {
 	return BUILTIN
 }
 
+// Inspect returns the builtin function representation
 func (b *Builtin) Inspect() string {
 	return "builtin function"
 }

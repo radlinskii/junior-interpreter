@@ -204,18 +204,25 @@ func TestErrorHandling(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
-
-		errObj, ok := evaluated.(*object.Error)
-		if !ok {
-			t.Errorf("object is not Error. got=%T(%+v)", evaluated, evaluated)
-			continue
-		}
-
-		if errObj.Message != tt.expectedMsg {
-			t.Errorf("wrong Error Message. expected=%q, got %q", tt.expectedMsg, errObj.Message)
+		if !testErrorObject(t, testEval(tt.input), tt.expectedMsg) {
+			return
 		}
 	}
+}
+
+func testErrorObject(t *testing.T, obj object.Object, expectedMessage string) bool {
+	errObj, ok := obj.(*object.Error)
+	if !ok {
+		t.Errorf("object is not an Error. got=%T(%+v)", obj, obj)
+		return false
+	}
+
+	if errObj.Message != expectedMessage {
+		t.Errorf("wrong Error Message. expected=%q, got %q", expectedMessage, errObj.Message)
+		return false
+	}
+
+	return true
 }
 
 func TestVarStatements(t *testing.T) {
@@ -446,8 +453,10 @@ func TestArrayIndexExpressions(t *testing.T) {
 		{"[1,2,3][1 + 1]", 3},
 		{"var myArray = [1, 2, 3]; myArray[0]", 1},
 		{"var myArray = [1, 2, 3]; myArray[0] + myArray[2]", 4},
-		{"[1, 2, 3][-1]", nil}, // TODO this should definitely be an error
-		{"[1, 2, 3][3]", nil},
+		{"[1, 2, 3][-1]", "index out of boundaries"},
+		{"[1, 2, 3][3]", "index out of boundaries"},
+		{"[1, 2, 3][true]", "index operator not supported: ARRAY[BOOLEAN]"},
+		{"54[1]", "index operator not supported: INTEGER[INTEGER]"},
 	}
 
 	for _, tt := range tests {
@@ -456,7 +465,7 @@ func TestArrayIndexExpressions(t *testing.T) {
 		if ok {
 			testIntegerObject(t, evaluated, int64(integer))
 		} else {
-			testNullObject(t, evaluated)
+			testErrorObject(t, evaluated, tt.expected.(string))
 		}
 	}
 }

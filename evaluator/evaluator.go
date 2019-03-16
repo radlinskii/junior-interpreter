@@ -289,7 +289,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	max := int64(len(arrayObject.Elements) - 1)
 
 	if i < 0 || i > max {
-		return NULL // return newError("index out of boundaries")
+		return newError("index out of boundaries")
 	}
 
 	return arrayObject.Elements[i]
@@ -314,7 +314,10 @@ func applyFunction(fun object.Object, args []object.Object) object.Object {
 	switch function := fun.(type) {
 	case *object.Function:
 		extendedEnv := extendedFunctionEnv(function, args)
-		evaluated := Eval(function.Body, extendedEnv) // TODO ERROR??
+		evaluated := Eval(function.Body, extendedEnv)
+		if isError(evaluated) {
+			return evaluated
+		}
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
 		return function.Fn(args...)

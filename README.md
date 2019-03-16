@@ -14,3 +14,4 @@ Code of interpreter for C-based programming language following the [writing an i
 - [x] running with file as an argument
 - [x] one-line comments
 - [x] multiple-lines comments
+- [ ] loop

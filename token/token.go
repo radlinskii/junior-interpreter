@@ -19,6 +19,12 @@ const (
 
 	// INT - integer literal
 	INT = "INT"
+	// STRING - string literal
+	STRING = "STRING"
+	// TRUE keyword "true"
+	TRUE = "TRUE" // TODO merge into BOOLEAN ??
+	// FALSE keyword "false"
+	FALSE = "FALSE"
 
 	// ASSIGN - assign operator
 	ASSIGN = "="
@@ -66,10 +72,6 @@ const (
 	RETURN = "RETURN"
 	// VAR keyword "var"
 	VAR = "VAR"
-	// TRUE keyword "true"
-	TRUE = "TRUE"
-	// FALSE keyword "false"
-	FALSE = "FALSE"
 	// IF keyword "if"
 	IF = "IF"
 	// ELSE keyword "else"

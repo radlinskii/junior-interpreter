@@ -333,32 +333,32 @@ func testNullObject(t *testing.T, obj object.Object) bool {
 	return true
 }
 
+func testStringObject(t *testing.T, obj object.Object, expected string) bool {
+	result, ok := obj.(*object.String)
+	if !ok {
+		t.Errorf("object is not String. got=%T (%+v)", obj, obj)
+		return false
+	}
+	if result.Value != expected {
+		t.Errorf("Wrong String value, expected=%s, got=%s", expected, result.Value)
+		return false
+	}
+	return true
+}
+
 func TestStringLiteral(t *testing.T) {
 	input := `"Hello World";`
 
-	evaluated := testEval(input)
-	str, ok := evaluated.(*object.String)
-
-	if !ok {
-		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
-	}
-
-	if str.Value != "Hello World" {
-		t.Errorf("String has wrong value. got=%q", str.Value)
+	if !testStringObject(t, testEval(input), "Hello World") {
+		return
 	}
 }
 
 func TestStringConcatenation(t *testing.T) {
 	input := `"Hello" + " World";`
 
-	evaluated := testEval(input)
-	str, ok := evaluated.(*object.String)
-	if !ok {
-		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
-	}
-
-	if str.Value != "Hello World" {
-		t.Errorf("String has wrong value. got=%q", str.Value)
+	if !testStringObject(t, testEval(input), "Hello World") {
+		return
 	}
 }
 
@@ -375,14 +375,8 @@ func TestStringComparison(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
-		bl, ok := evaluated.(*object.Boolean)
-		if !ok {
-			t.Fatalf("object is not boolean. got=%T (%+v)", evaluated, evaluated)
-		}
-
-		if bl.Value != tt.expected {
-			t.Errorf("boolean has wrong value for %s. got=%t", tt.input, bl.Value)
+		if !testBooleanObject(t, testEval(tt.input), tt.expected) {
+			return
 		}
 	}
 }
@@ -404,7 +398,9 @@ func TestBuiltinFunctions(t *testing.T) {
 
 		switch expected := tt.expected.(type) {
 		case int:
-			testIntegerObject(t, evaluated, int64(expected))
+			if !testIntegerObject(t, evaluated, int64(expected)) {
+				return
+			}
 		case string:
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
@@ -416,4 +412,24 @@ func TestBuiltinFunctions(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestArrayLiteral(t *testing.T) {
+	input := `[1, 2 * 2, true, "word"];`
+
+	evaluated := testEval(input)
+
+	array, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("object is not Array. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if len(array.Elements) != 4 {
+		t.Fatalf("array has wrong number of elements, expected=4, got=%d", len(array.Elements))
+	}
+
+	testIntegerObject(t, array.Elements[0], 1)
+	testIntegerObject(t, array.Elements[1], 4)
+	testBooleanObject(t, array.Elements[2], true)
+	testStringObject(t, array.Elements[3], "word")
 }

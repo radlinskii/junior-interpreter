@@ -390,3 +390,29 @@ func (al *ArrayLiteral) String() string {
 
 	return out.String()
 }
+
+// IndexExpression expression for gettting elements from array
+type IndexExpression struct {
+	Token token.Token // "["
+	Left  Expression
+	Right Expression
+}
+
+func (ie *IndexExpression) expressionNode() {}
+
+// TokenLiteral returns IndexExpression "[" token
+func (ie *IndexExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+
+func (ie *IndexExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString("[")
+	out.WriteString(ie.Right.String())
+	out.WriteString("])")
+
+	return out.String()
+}

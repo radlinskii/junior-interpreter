@@ -16,6 +16,8 @@ const (
 	INTEGER = "INTEGER"
 	// BOOLEAN object type
 	BOOLEAN = "BOOLEAN"
+	// STRING object type
+	STRING = "STRING"
 	// NULL object type
 	NULL = "NULL"
 	// RETURN object wrapper type
@@ -60,6 +62,21 @@ func (b *Boolean) Inspect() string {
 // Type returns the boolean type.
 func (b *Boolean) Type() Type {
 	return BOOLEAN
+}
+
+// String object.
+type String struct {
+	Value string
+}
+
+// Inspect returns value of a string.
+func (s *String) Inspect() string {
+	return s.Value
+}
+
+// Type returns the string type.
+func (s *String) Type() Type {
+	return STRING
 }
 
 // Null object.

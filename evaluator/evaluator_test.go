@@ -201,6 +201,8 @@ func TestErrorHandling(t *testing.T) {
 		{"foobar;", "unknown identifier: foobar"},
 		{`"Hell" - "world"`, "unknown operator: STRING - STRING"},
 		{`5 + "worlds";`, "type mismatch: INTEGER + STRING"},
+		{`{fun(x) { return x +1; }: "Monkey"}[fun(x) { return x +1; }];`, "FUNCTION can't be used as hash key"},
+		{`{"key": "Monkey"}[fun(x) { return x +1; }];`, "index operator not supported: HASH[FUNCTION]"},
 	}
 
 	for _, tt := range tests {
@@ -481,6 +483,72 @@ func TestArrayIndexExpressions(t *testing.T) {
 		{"[1, 2, 3][3]", "index out of boundaries"},
 		{"[1, 2, 3][true]", "index operator not supported: ARRAY[BOOLEAN]"},
 		{"54[1]", "index operator not supported: INTEGER[INTEGER]"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			testErrorObject(t, evaluated, tt.expected.(string))
+		}
+	}
+}
+
+func TestHashLiterals(t *testing.T) {
+	input := `
+	var two = "two";
+	{
+		"one": 10 - 9,
+		two: 1 + 1,
+		"thr" + "ee": 6 / 2,
+		4: 4,
+		true: 5,
+		false: 6,
+	}
+	`
+	expected := map[object.HashKey]int64{
+		(&object.String{Value: "one"}).HashKey():   1,
+		(&object.String{Value: "two"}).HashKey():   2,
+		(&object.String{Value: "three"}).HashKey(): 3,
+		(&object.Integer{Value: 4}).HashKey():      4,
+		TRUE.HashKey():                             5,
+		FALSE.HashKey():                            6,
+	}
+
+	evaluated := testEval(input)
+	result, ok := evaluated.(*object.Hash)
+	if !ok {
+		t.Fatalf("Eval didn't return Hash. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if len(result.Pairs) != len(expected) {
+		t.Fatalf("Hash has wrong num of pairs. got=%d", len(result.Pairs))
+	}
+
+	for expectedKey, expectedValue := range expected {
+		pair, ok := result.Pairs[expectedKey]
+		if !ok {
+			t.Errorf("no pair for given key in Pairs")
+		}
+
+		testIntegerObject(t, pair.Value, expectedValue)
+	}
+}
+
+func TestHashIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`{"foo": 5}["foo"]`, 1},
+		{`{"foo": 5}["bar"]`, "No hash pair with a key=bar"},
+		{`var key = "foo"; {"foo": 5}[key]`, 5},
+		{`{}["foo"]`, "No hash pair with a key=foo"},
+		{`{5: 10}[5]`, 10},
+		{`{true: 5}[true]`, 5},
+		{`{false: 5}[false]`, 5},
 	}
 
 	for _, tt := range tests {

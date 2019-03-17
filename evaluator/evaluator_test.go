@@ -398,6 +398,20 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len("hello world")`, 11},
 		{`len(1)`, "argument to `len` not supported, got INTEGER"},
 		{`len("one", "two")`, "wrong number of arguments. got=2 want=1"},
+		{`len([1,2,3,4])`, 4},
+		{`len([])`, 0},
+		{`first([1,2,3,4])`, 1},
+		{`first([])`, nil},
+		{`last([1,2,3,4])`, 4},
+		{`last([])`, nil},
+		{`rest([1,2,3,4])`, []int{2, 3, 4}},
+		{`rest([1])`, []int{}},
+		{`rest([])`, nil},
+		{`push([], 1)`, []int{1}},
+		{`push([1,2],3)`, []int{1, 2, 3}},
+		{`push([1,2,3])`, "wrong number of arguments. got=1 want=2"},
+		{`push([1,2,3],3,3)`, "wrong number of arguments. got=3 want=2"},
+		{`push(true,3)`, "first argument to `push` not supported, got BOOLEAN"},
 	}
 
 	for _, tt := range tests {
@@ -409,13 +423,23 @@ func TestBuiltinFunctions(t *testing.T) {
 				return
 			}
 		case string:
-			errObj, ok := evaluated.(*object.Error)
-			if !ok {
-				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
-				continue
+			if !testErrorObject(t, evaluated, expected) {
+				return
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
+		case []int:
+			expectedArr := tt.expected.([]int)
+			evaluatedArr := evaluated.(*object.Array).Elements
+			if len(evaluated.(*object.Array).Elements) != len(expectedArr) {
+				t.Errorf("evaluatedArr length expected to be %d, got %d", len(expectedArr), len(evaluatedArr))
+			}
+			for i, o := range evaluatedArr {
+				if !testIntegerObject(t, o, int64(expectedArr[i])) {
+					return
+				}
+			}
+		case nil:
+			if !testNullObject(t, evaluated) {
+				return
 			}
 		}
 	}

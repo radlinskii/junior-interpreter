@@ -542,10 +542,10 @@ func TestHashIndexExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`{"foo": 5}["foo"]`, 1},
-		{`{"foo": 5}["bar"]`, "No hash pair with a key=bar"},
+		{`{"foo": 1}["foo"]`, 1},
+		{`{"foo": 5}["bar"]`, "No hash pair with a given key"},
 		{`var key = "foo"; {"foo": 5}[key]`, 5},
-		{`{}["foo"]`, "No hash pair with a key=foo"},
+		{`{}["foo"]`, "No hash pair with a given key"},
 		{`{5: 10}[5]`, 10},
 		{`{true: 5}[true]`, 5},
 		{`{false: 5}[false]`, 5},

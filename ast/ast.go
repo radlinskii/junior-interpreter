@@ -202,6 +202,7 @@ func (bl *BooleanLiteral) String() string {
 	return bl.Token.Literal
 }
 
+// StringLiteral is a node representing a string.
 type StringLiteral struct {
 	Token token.Token
 	Value string
@@ -209,6 +210,7 @@ type StringLiteral struct {
 
 func (sl *StringLiteral) expressionNode() {}
 
+// TokenLiteral returns the string value
 func (sl *StringLiteral) TokenLiteral() string {
 	return sl.Token.Literal
 }
@@ -357,6 +359,60 @@ func (ce *CallExpression) String() string {
 	out.WriteString("(")
 	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
+
+	return out.String()
+}
+
+// ArrayLiteral is a expression represting an array.
+type ArrayLiteral struct {
+	token.Token // "["
+	Elements    []Expression
+}
+
+func (al *ArrayLiteral) expressionNode() {}
+
+// TokenLiteral returns array's starting token - "["
+func (al *ArrayLiteral) TokenLiteral() string {
+	return al.Token.Literal
+}
+
+func (al *ArrayLiteral) String() string {
+	var out bytes.Buffer
+
+	elements := []string{}
+	for _, el := range al.Elements {
+		elements = append(elements, el.String())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}
+
+// IndexExpression expression for gettting elements from array
+type IndexExpression struct {
+	Token token.Token // "["
+	Left  Expression
+	Right Expression
+}
+
+func (ie *IndexExpression) expressionNode() {}
+
+// TokenLiteral returns IndexExpression "[" token
+func (ie *IndexExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+
+func (ie *IndexExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString("[")
+	out.WriteString(ie.Right.String())
+	out.WriteString("])")
 
 	return out.String()
 }

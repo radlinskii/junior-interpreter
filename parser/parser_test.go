@@ -270,6 +270,8 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"a + add(b * c) + d", "((a + add((b * c))) + d)"},
 		{"add(1,2+3,add(4,5))", "add(1, (2 + 3), add(4, 5))"},
 		{"add(a+b+c*d/f, g)", "add(((a + b) + ((c * d) / f)), g)"},
+		{"a * [1, 2, 3, 4][b*c] * d", "((a * ([1, 2, 3, 4][(b * c)])) * d)"},
+		{"add(a * b[2], b[1], 2 * [1, 2][1])", "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"},
 	}
 
 	for _, tt := range tests {
@@ -578,12 +580,65 @@ func TestStringLiteralExpression(t *testing.T) {
 	if !ok {
 		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
 	}
-	literal, ok := stmnt.Expression.(*ast.StringLiteral)
+
+	if !testStringLiteral(t, stmnt.Expression, "hello world") {
+		return
+	}
+}
+
+func testStringLiteral(t *testing.T, exp ast.Expression, expected string) bool {
+	string, ok := exp.(*ast.StringLiteral)
 	if !ok {
-		t.Fatalf("exp not *ast.StringLiteral. got=%T", stmnt.Expression)
+		t.Errorf("exp not *ast.StringLiteral. got=%T", exp)
+		return false
 	}
 
-	if literal.Value != "hello world" {
-		t.Errorf("literal.Value not %q. got=%q", "hello world", literal.Value)
+	if string.Value != expected {
+		t.Errorf("string.Value not %q. got=%q", expected, string.Value)
+		return false
 	}
+
+	return true
+}
+
+func TestParsingArrayLiterals(t *testing.T) {
+	input := `[1, 2 * 2, true, "word"]`
+
+	program := testParsingInput(t, input, 1)
+
+	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+	array, ok := stmnt.Expression.(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.ArrayLiteral. got=%T", stmnt.Expression)
+	}
+
+	if len(array.Elements) != 4 {
+		t.Fatalf("len(array.Elements) not 4, got=%d", len(array.Elements))
+	}
+
+	testIntegerLiteral(t, array.Elements[0], 1)
+	testInfixExpression(t, array.Elements[1], 2, "*", 2)
+	testBooleanLiteral(t, array.Elements[2], true)
+	testStringLiteral(t, array.Elements[3], "word")
+}
+
+func TestParsingIndexExpression(t *testing.T) {
+	input := `Array[2+2];`
+
+	program := testParsingInput(t, input, 1)
+
+	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+	indexExp, ok := stmnt.Expression.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("exp not *ast.IndexExpression. got=%T", stmnt.Expression)
+	}
+
+	testIdentifier(t, indexExp.Left, "Array")
+	testInfixExpression(t, indexExp.Right, 2, "+", 2)
 }

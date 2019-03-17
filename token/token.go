@@ -65,6 +65,10 @@ const (
 	LBRACE = "{"
 	// RBRACE = ends block statements
 	RBRACE = "}"
+	// LBRACKET = starts an array statement
+	LBRACKET = "["
+	// RBRACKET = ends an array statement
+	RBRACKET = "]"
 
 	// FUNCTION keyword "fun"
 	FUNCTION = "FUNCTION"

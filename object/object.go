@@ -28,6 +28,8 @@ const (
 	FUNCTION = "FUNCTION"
 	// BUILTIN object type
 	BUILTIN = "BUILTIN"
+	// ARRAY object type
+	ARRAY = "ARRAY"
 )
 
 // Object interface is implemented by the objects.
@@ -36,7 +38,7 @@ type Object interface {
 	Type() Type
 }
 
-// Built-in function
+// BuiltinFunction is a built-in function type.
 type BuiltinFunction func(args ...Object) Object
 
 // Integer object.
@@ -190,14 +192,43 @@ func (e *Environment) Set(name string, val Object) Object {
 	return val
 }
 
+// Builtin is a wrapper over built-in function.
 type Builtin struct {
 	Fn BuiltinFunction
 }
 
+// Type returns the built-ins' type
 func (b *Builtin) Type() Type {
 	return BUILTIN
 }
 
+// Inspect returns the builtin function representation
 func (b *Builtin) Inspect() string {
 	return "builtin function"
+}
+
+// Array represents slice of objects
+type Array struct {
+	Elements []Object
+}
+
+// Type returns array type
+func (a *Array) Type() Type {
+	return ARRAY
+}
+
+// Inspect returns stringified array
+func (a *Array) Inspect() string {
+	var out bytes.Buffer
+
+	elements := []string{}
+	for _, e := range a.Elements {
+		elements = append(elements, e.Inspect())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+
+	return out.String()
 }

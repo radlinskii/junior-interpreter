@@ -56,6 +56,8 @@ const (
 	COMMA = ","
 	// SEMICOLON - separates expressions
 	SEMICOLON = ";"
+	// COLON - separates key value pair in hashes
+	COLON = ":"
 
 	// LPAREN - function calls, binding expressions
 	LPAREN = "("

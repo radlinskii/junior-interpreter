@@ -1,10 +1,10 @@
 var map = fun(arr, fn) {
     var iter = fun(arr, accumulator) {
-        return if (len(arr) == 0) {
+        if (len(arr) == 0) {
             return accumulator;
-        } else {
-            return iter(rest(arr), push(accumulator, fn(first(arr))));
         }
+
+        return iter(rest(arr), push(accumulator, fn(first(arr))));
     };
 
     return iter(arr, [])

@@ -1,10 +1,10 @@
 var reduce = fun(arr, initial, fn) {
     var iter = fun(arr, result) {
-        return if(len(arr) == 0) {
+        if(len(arr) == 0) {
             return result
-        } else {
-            return iter(rest(arr), fn(result, first(arr)));
         }
+
+        return iter(rest(arr), fn(result, first(arr)));
     };
 
     return iter(arr, initial);

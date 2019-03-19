@@ -271,7 +271,7 @@ func (ie *InfixExpression) String() string {
 	return out.String()
 }
 
-// IfStatement is a AST node representing  infix expression, e.g. 1 + 2.
+// IfStatement is a AST node representing if statement // if (a < b) { print(a); } else { print(b); }
 type IfStatement struct {
 	Token       token.Token
 	Condition   Expression

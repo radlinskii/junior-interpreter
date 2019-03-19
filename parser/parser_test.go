@@ -284,7 +284,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 	}
 }
 
-func TestIfExpression(t *testing.T) {
+func TestIfStatement(t *testing.T) {
 	input := `
 	if (x < y) {
 		x;
@@ -316,7 +316,7 @@ func TestIfExpression(t *testing.T) {
 
 }
 
-func TestIfElseExpression(t *testing.T) {
+func TestIfElseStatement(t *testing.T) {
 	input := `
 	if (x < y) {
 		x;

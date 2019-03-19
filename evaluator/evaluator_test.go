@@ -107,7 +107,7 @@ func TestBangOperator(t *testing.T) {
 	}
 }
 
-func TestIfElseExpressions(t *testing.T) {
+func TestIfElseStatements(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected interface{}

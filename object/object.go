@@ -236,15 +236,18 @@ func (a *Array) Inspect() string {
 	return out.String()
 }
 
+// Hashable interface represents types that can be keys in hash object.
 type Hashable interface {
 	HashKey() HashKey
 }
 
+// HashKey is key in Hash.
 type HashKey struct {
 	Type  Type
 	Value uint64
 }
 
+// HashKey returns HashKey created from a Boolean.
 func (b *Boolean) HashKey() HashKey {
 	var value uint64
 
@@ -257,10 +260,12 @@ func (b *Boolean) HashKey() HashKey {
 	return HashKey{Type: b.Type(), Value: value}
 }
 
+// HashKey returns HashKey created from a Integer.
 func (i *Integer) HashKey() HashKey {
 	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
 }
 
+// HashKey returns HashKey created from a String.
 func (s *String) HashKey() HashKey {
 	h := fnv.New64a()
 	h.Write([]byte(s.Value))
@@ -274,14 +279,17 @@ type HashPair struct {
 	Value Object
 }
 
+// Hash represents the Hash Object Type.
 type Hash struct {
 	Pairs map[HashKey]HashPair
 }
 
+// Type returns the Hash object type.
 func (h *Hash) Type() Type {
 	return HASH
 }
 
+// Inspect returns stringified Hash object.
 func (h *Hash) Inspect() string {
 	var out bytes.Buffer
 

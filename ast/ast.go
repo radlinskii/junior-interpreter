@@ -271,31 +271,31 @@ func (ie *InfixExpression) String() string {
 	return out.String()
 }
 
-// IfExpression is a AST node representing  infix expression, e.g. 1 + 2.
-type IfExpression struct {
+// IfStatement is a AST node representing if statement // if (a < b) { print(a); } else { print(b); }
+type IfStatement struct {
 	Token       token.Token
 	Condition   Expression
 	Consequence *BlockStatement
 	Alternative *BlockStatement
 }
 
-func (ie *IfExpression) expressionNode() {}
+func (is *IfStatement) statementNode() {}
 
-// TokenLiteral returns the IfExpression's token.
-func (ie *IfExpression) TokenLiteral() string {
-	return ie.Token.Literal
+// TokenLiteral returns the IfStatement's token.
+func (is *IfStatement) TokenLiteral() string {
+	return is.Token.Literal
 }
 
-func (ie *IfExpression) String() string {
+func (is *IfStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("if")
-	out.WriteString(ie.Condition.String() + " ")
-	out.WriteString(ie.Consequence.String())
+	out.WriteString(is.Condition.String() + " ")
+	out.WriteString(is.Consequence.String())
 
-	if ie.Alternative != nil {
+	if is.Alternative != nil {
 		out.WriteString("else ")
-		out.WriteString(ie.Alternative.String())
+		out.WriteString(is.Alternative.String())
 	}
 
 	return out.String()

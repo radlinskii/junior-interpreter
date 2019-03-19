@@ -61,8 +61,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return right
 		}
 		return evalInfixExpression(node.Operator, left, right)
-	case *ast.IfExpression:
-		return evalIfExpression(node, env)
+	case *ast.IfStatement:
+		return evalIfStatement(node, env)
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
 	case *ast.FunctionLiteral:
@@ -237,7 +237,7 @@ func evalBoolToBooleanObjectReference(val bool) object.Object {
 	return FALSE
 }
 
-func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
+func evalIfStatement(ie *ast.IfStatement, env *object.Environment) object.Object {
 	condition := Eval(ie.Condition, env)
 	if isError(condition) {
 		return condition

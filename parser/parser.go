@@ -84,7 +84,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.infixParseFuncs = make(map[token.Type]infixParseFunc)
 
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
-	p.registerPrefix(token.IF, p.parseIfExpression)
 
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.TRUE, p.parseBooleanLiteral)
@@ -147,6 +146,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.VAR:
 		return p.parseVarStatement()
+	case token.IF:
+		return p.parseIfStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
@@ -268,15 +269,15 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
-func (p *Parser) parseIfExpression() ast.Expression {
-	exp := &ast.IfExpression{Token: p.curToken}
+func (p *Parser) parseIfStatement() ast.Statement {
+	stmnt := &ast.IfStatement{Token: p.curToken}
 
 	if !p.expectPeek(token.LPAREN) {
 		return nil
 	}
 
 	p.nextToken()
-	exp.Condition = p.parseExpression(LOWEST)
+	stmnt.Condition = p.parseExpression(LOWEST)
 
 	if !p.expectPeek(token.RPAREN) {
 		return nil
@@ -286,7 +287,7 @@ func (p *Parser) parseIfExpression() ast.Expression {
 		return nil
 	}
 
-	exp.Consequence = p.parseBlockStatement()
+	stmnt.Consequence = p.parseBlockStatement()
 
 	if p.peekTokenIs(token.ELSE) {
 		p.nextToken()
@@ -295,10 +296,10 @@ func (p *Parser) parseIfExpression() ast.Expression {
 			return nil
 		}
 
-		exp.Alternative = p.parseBlockStatement()
+		stmnt.Alternative = p.parseBlockStatement()
 	}
 
-	return exp
+	return stmnt
 }
 
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {

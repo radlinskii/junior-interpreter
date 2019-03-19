@@ -292,31 +292,26 @@ func TestIfExpression(t *testing.T) {
 
 	program := testParsingInput(t, input, 1)
 
-	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	stmnt, ok := program.Statements[0].(*ast.IfStatement)
 	if !ok {
-		t.Fatalf("program.Statements[0] is not *ast.Expression. got=%T", program.Statements[0])
+		t.Fatalf("stmnt is not *ast.IfStatement. got=%T", stmnt)
 	}
 
-	exp, ok := stmnt.Expression.(*ast.IfExpression)
-	if !ok {
-		t.Fatalf("stmnt.Expression is not *ast.IfExpression. got=%T", stmnt.Expression)
-	}
-
-	if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
+	if !testInfixExpression(t, stmnt.Condition, "x", "<", "y") {
 		return
 	}
 
-	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	consequence, ok := stmnt.Consequence.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Errorf("exp.Consequence.Statements[0] is not *ast.ExpressionStatement. got=%T", exp.Consequence.Statements[0])
+		t.Errorf("stmnt.Consequence.Statements[0] is not *ast.ExpressionStatement. got=%T", stmnt.Consequence.Statements[0])
 	}
 
 	if !testIdentifier(t, consequence.Expression, "x") {
 		return
 	}
 
-	if exp.Alternative != nil {
-		t.Errorf("exp.Alternative was not nil. got=%+v", exp.Alternative)
+	if stmnt.Alternative != nil {
+		t.Errorf("stmnt.Alternative was not nil. got=%+v", stmnt.Alternative)
 	}
 
 }
@@ -331,32 +326,27 @@ func TestIfElseExpression(t *testing.T) {
 
 	program := testParsingInput(t, input, 1)
 
-	stmnt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	stmnt, ok := program.Statements[0].(*ast.IfStatement)
 	if !ok {
-		t.Fatalf("program.Statements[0] is not *ast.Expression. got=%T", program.Statements[0])
+		t.Fatalf("stmnt is not *ast.IfStatement. got=%T", stmnt)
 	}
 
-	exp, ok := stmnt.Expression.(*ast.IfExpression)
-	if !ok {
-		t.Fatalf("stmnt.Expression is not *ast.IfExpression. got=%T", stmnt.Expression)
-	}
-
-	if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
+	if !testInfixExpression(t, stmnt.Condition, "x", "<", "y") {
 		return
 	}
 
-	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	consequence, ok := stmnt.Consequence.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Errorf("exp.Consequence.Statements[0] is not *ast.ExpressionStatement. got=%T", exp.Consequence.Statements[0])
+		t.Errorf("stmnt.Consequence.Statements[0] is not *ast.ExpressionStatement. got=%T", stmnt.Consequence.Statements[0])
 	}
 
 	if !testIdentifier(t, consequence.Expression, "x") {
 		return
 	}
 
-	alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
+	alternative, ok := stmnt.Alternative.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Errorf("exp.Alternative.Statements[0] is not *ast.ExpressionStatement. got=%T", exp.Alternative.Statements[0])
+		t.Errorf("stmnt.Alternative.Statements[0] is not *ast.ExpressionStatement. got=%T", stmnt.Alternative.Statements[0])
 	}
 
 	if !testIdentifier(t, alternative.Expression, "y") {
@@ -364,15 +354,15 @@ func TestIfElseExpression(t *testing.T) {
 	}
 }
 
-func testPrefixExpression(t *testing.T, exp ast.Expression, operator string, right interface{}) bool {
-	pe, ok := exp.(*ast.PrefixExpression)
+func testPrefixExpression(t *testing.T, stmnt ast.Expression, operator string, right interface{}) bool {
+	pe, ok := stmnt.(*ast.PrefixExpression)
 	if !ok {
-		t.Fatalf("expressionStatement is not *ast.PrefixExpression. got=%q", exp)
+		t.Fatalf("expressionStatement is not *ast.PrefixExpression. got=%q", stmnt)
 		return false
 	}
 
 	if pe.Operator != operator {
-		t.Fatalf("exp.Operator is not %s. got=%s", operator, pe.Operator)
+		t.Fatalf("stmnt.Operator is not %s. got=%s", operator, pe.Operator)
 		return false
 	}
 

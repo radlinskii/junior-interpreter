@@ -13,4 +13,4 @@ var map = fun(arr, fn) {
 var a = [1,2,3,4,5];
 var triple = fun(x) { return x*3; };
 
-map(a, triple)
+print(map(a, triple));

@@ -7,4 +7,4 @@ var factorial = fun(x) {
     return factorial(x - 1) * x;
 };
 
-factorial(5);
+print(factorial(5));

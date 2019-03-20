@@ -8,10 +8,22 @@ import (
 	"github.com/radlinskii/interpreter/parser"
 )
 
-func testEval(input string) object.Object {
+func testEval(t *testing.T, input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
+
+	errors := p.Errors()
+	if len(errors) != 0 {
+
+		t.Errorf("parser encountered %d errors", len(errors))
+		for _, msg := range errors {
+			t.Errorf("parser error: %q", msg)
+		}
+
+		t.FailNow()
+	}
+
 	env := object.NewEnvironment()
 
 	return Eval(program, env)
@@ -22,25 +34,25 @@ func TestEvalIntegerExpression(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"5", 5},
-		{"10", 10},
-		{"-55", -55},
-		{"-10", -10},
-		{"5 + 5 + 5 - 10", 5},
-		{"-10 + 23", 13},
-		{"2*2*2*2", 16},
-		{"2 + 3 * 4", 14},
-		{"2 * 3 + 4", 10},
-		{"2 + 3 * -4", -10},
-		{"50 / 2 * 2 + 10", 60},
-		{"2 * (5 + 10)", 30},
-		{"3 * 3 * 3 + 10", 37},
-		{"3 * (3 * 3) + 10", 37},
-		{"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50},
+		{"5;", 5},
+		{"10;", 10},
+		{"-55;", -55},
+		{"-10;", -10},
+		{"5 + 5 + 5 - 10;", 5},
+		{"-10 + 23;", 13},
+		{"2*2*2*2;", 16},
+		{"2 + 3 * 4;", 14},
+		{"2 * 3 + 4;", 10},
+		{"2 + 3 * -4;", -10},
+		{"50 / 2 * 2 + 10;", 60},
+		{"2 * (5 + 10);", 30},
+		{"3 * 3 * 3 + 10;", 37},
+		{"3 * (3 * 3) + 10;", 37},
+		{"(5 + 10 * 2 + 15 / 3) * 2 + -10;", 50},
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		if !testIntegerObject(t, evaluated, tt.expected) {
 			return
 		}
@@ -54,32 +66,32 @@ func TestEvalBooleanExpression(t *testing.T) {
 	}{
 		{"true;", true},
 		{"false;", false},
-		{"1 < 2", true},
-		{"1 > 2", false},
-		{"1 < 1", false},
-		{"1 > 1", false},
-		{"1 >= 1", true},
-		{"1 <= 1", true},
-		{"1 == 1", true},
-		{"1 != 1", false},
-		{"1 != 2", true},
-		{"1 == 2", false},
-		{"true == true", true},
-		{"false == true", false},
-		{"false == false", true},
-		{"false != true", true},
-		{"(1 < 2) == true", true},
-		{"(1 > 2) != true", true},
-		{"(1 < 2) == false", false},
-		{"(1 < 2) == (4 >= 8)", false},
-		{"(1 < 2) != (4 >= 8)", true},
-		{"1 < 2 != 4 >= 8", true},
-		{"1 < 2 != 4 <= 8", false},
-		{"1 < 2 == 4 <= 8", true},
+		{"1 < 2;", true},
+		{"1 > 2;", false},
+		{"1 < 1;", false},
+		{"1 > 1;", false},
+		{"1 >= 1;", true},
+		{"1 <= 1;", true},
+		{"1 == 1;", true},
+		{"1 != 1;", false},
+		{"1 != 2;", true},
+		{"1 == 2;", false},
+		{"true == true;", true},
+		{"false == true;", false},
+		{"false == false;", true},
+		{"false != true;", true},
+		{"(1 < 2) == true;", true},
+		{"(1 > 2) != true;", true},
+		{"(1 < 2) == false;", false},
+		{"(1 < 2) == (4 >= 8);", false},
+		{"(1 < 2) != (4 >= 8);", true},
+		{"1 < 2 != 4 >= 8;", true},
+		{"1 < 2 != 4 <= 8;", false},
+		{"1 < 2 == 4 <= 8;", true},
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		if !testBooleanObject(t, evaluated, tt.expected) {
 			return
 		}
@@ -91,16 +103,16 @@ func TestBangOperator(t *testing.T) {
 		input    string
 		expected bool
 	}{
-		{"!true", false},
-		{"!false", true},
-		{"!5", false},
-		{"!!true", true},
-		{"!!false", false},
-		{"!!5", true},
+		{"!true;", false},
+		{"!false;", true},
+		{"!5;", false},
+		{"!!true;", true},
+		{"!!false;", false},
+		{"!!5;", true},
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		if !testBooleanObject(t, evaluated, tt.expected) {
 			return
 		}
@@ -155,7 +167,7 @@ func TestIfElseStatements(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if !ok {
 			if !testNullObject(t, evaluated) {
@@ -182,7 +194,7 @@ func TestReturnStatements(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }
@@ -199,14 +211,14 @@ func TestErrorHandling(t *testing.T) {
 		{"5; true + false; 10;", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"if(10 > 1) { return true + false; }", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"foobar;", "unknown identifier: foobar"},
-		{`"Hell" - "world"`, "unknown operator: STRING - STRING"},
+		{`"Hell" - "world";`, "unknown operator: STRING - STRING"},
 		{`5 + "worlds";`, "type mismatch: INTEGER + STRING"},
 		{`{fun(x) { return x +1; }: "Monkey"}[fun(x) { return x +1; }];`, "FUNCTION can't be used as hash key"},
 		{`{"key": "Monkey"}[fun(x) { return x +1; }];`, "index operator not supported: HASH[FUNCTION]"},
 	}
 
 	for _, tt := range tests {
-		if !testErrorObject(t, testEval(tt.input), tt.expectedMsg) {
+		if !testErrorObject(t, testEval(t, tt.input), tt.expectedMsg) {
 			return
 		}
 	}
@@ -233,13 +245,13 @@ func TestVarStatements(t *testing.T) {
 		expected int64
 	}{
 		{"var a = 5; a;", 5},
-		{"var a = 5 * 5; a", 25},
+		{"var a = 5 * 5; a;", 25},
 		{"var a = 5; var b = a; b;", 5},
 		{"var a = 5; var b = a; var c = a + b + 5; c + 5;", 20},
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 
 		if !testIntegerObject(t, evaluated, tt.expected) {
 			return
@@ -248,10 +260,10 @@ func TestVarStatements(t *testing.T) {
 }
 
 func TestFunctionObject(t *testing.T) {
-	input := "fun(x) { return x + 2; }"
+	input := "fun(x) { return x + 2; };"
 	expectedBody := "return (x + 2);"
 
-	evaluated := testEval(input)
+	evaluated := testEval(t, input)
 	fun, ok := evaluated.(*object.Function)
 	if !ok {
 		t.Fatalf("object is not a Function. got=%T (%+v)", evaluated, evaluated)
@@ -275,16 +287,16 @@ func TestFunctions(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"var identity = fun(x) { x; } identity(5);", 5},
-		{"var identity = fun(x) { return x; } identity(5);", 5},
-		{"var double = fun(x) { return x * 2; } double(5);", 10},
-		{"var add = fun(x, y) { return x + y; } add(5, 10);", 15},
-		{"var add = fun(x, y) { return x + y; } add(5, add(6, 4));", 15},
+		{"var identity = fun(x) { x; }; identity(5);", 5},
+		{"var identity = fun(x) { return x; }; identity(5);", 5},
+		{"var double = fun(x) { return x * 2; }; double(5);", 10},
+		{"var add = fun(x, y) { return x + y; }; add(5, 10);", 15},
+		{"var add = fun(x, y) { return x + y; }; add(5, add(6, 4));", 15},
 		{"fun(x) { return x; }(99);", 99},
 	}
 
 	for _, tt := range tests {
-		if !testIntegerObject(t, testEval(tt.input), tt.expected) {
+		if !testIntegerObject(t, testEval(t, tt.input), tt.expected) {
 			return
 		}
 	}
@@ -303,7 +315,7 @@ func TestClosures(t *testing.T) {
 	`
 	expected := 10
 
-	if !testIntegerObject(t, testEval(input), int64(expected)) {
+	if !testIntegerObject(t, testEval(t, input), int64(expected)) {
 		return
 	}
 }
@@ -358,7 +370,7 @@ func testStringObject(t *testing.T, obj object.Object, expected string) bool {
 func TestStringLiteral(t *testing.T) {
 	input := `"Hello World";`
 
-	if !testStringObject(t, testEval(input), "Hello World") {
+	if !testStringObject(t, testEval(t, input), "Hello World") {
 		return
 	}
 }
@@ -366,7 +378,7 @@ func TestStringLiteral(t *testing.T) {
 func TestStringConcatenation(t *testing.T) {
 	input := `"Hello" + " World";`
 
-	if !testStringObject(t, testEval(input), "Hello World") {
+	if !testStringObject(t, testEval(t, input), "Hello World") {
 		return
 	}
 }
@@ -376,15 +388,15 @@ func TestStringComparison(t *testing.T) {
 		input    string
 		expected bool
 	}{
-		{`"hello" == "hello"`, true},
-		{`"hello" != "hello"`, false},
-		{`"hello" == " hello"`, false},
-		{`"hello" != " hello"`, true},
-		{`"hello" == "worlds"`, false},
+		{`"hello" == "hello";`, true},
+		{`"hello" != "hello";`, false},
+		{`"hello" == " hello";`, false},
+		{`"hello" != " hello";`, true},
+		{`"hello" == "worlds";`, false},
 	}
 
 	for _, tt := range tests {
-		if !testBooleanObject(t, testEval(tt.input), tt.expected) {
+		if !testBooleanObject(t, testEval(t, tt.input), tt.expected) {
 			return
 		}
 	}
@@ -395,29 +407,29 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`len("")`, 0},
-		{`len("four")`, 4},
-		{`len("hello world")`, 11},
-		{`len(1)`, "argument to `len` not supported, got INTEGER"},
-		{`len("one", "two")`, "wrong number of arguments. got=2 want=1"},
-		{`len([1,2,3,4])`, 4},
-		{`len([])`, 0},
-		{`first([1,2,3,4])`, 1},
-		{`first([])`, nil},
-		{`last([1,2,3,4])`, 4},
-		{`last([])`, nil},
-		{`rest([1,2,3,4])`, []int{2, 3, 4}},
-		{`rest([1])`, []int{}},
-		{`rest([])`, nil},
-		{`push([], 1)`, []int{1}},
-		{`push([1,2],3)`, []int{1, 2, 3}},
-		{`push([1,2,3])`, "wrong number of arguments. got=1 want=2"},
-		{`push([1,2,3],3,3)`, "wrong number of arguments. got=3 want=2"},
-		{`push(true,3)`, "first argument to `push` not supported, got BOOLEAN"},
+		{`len("");`, 0},
+		{`len("four");`, 4},
+		{`len("hello world");`, 11},
+		{`len(1);`, "argument to `len` not supported, got INTEGER"},
+		{`len("one", "two");`, "wrong number of arguments. got=2 want=1"},
+		{`len([1,2,3,4]);`, 4},
+		{`len([]);`, 0},
+		{`first([1,2,3,4]);`, 1},
+		{`first([]);`, nil},
+		{`last([1,2,3,4]);`, 4},
+		{`last([]);`, nil},
+		{`rest([1,2,3,4]);`, []int{2, 3, 4}},
+		{`rest([1]);`, []int{}},
+		{`rest([]);`, nil},
+		{`push([], 1);`, []int{1}},
+		{`push([1,2],3);`, []int{1, 2, 3}},
+		{`push([1,2,3]);`, "wrong number of arguments. got=1 want=2"},
+		{`push([1,2,3],3,3);`, "wrong number of arguments. got=3 want=2"},
+		{`push(true,3);`, "first argument to `push` not supported, got BOOLEAN"},
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 
 		switch expected := tt.expected.(type) {
 		case int:
@@ -450,7 +462,7 @@ func TestBuiltinFunctions(t *testing.T) {
 func TestArrayLiteral(t *testing.T) {
 	input := `[1, 2 * 2, true, "word"];`
 
-	evaluated := testEval(input)
+	evaluated := testEval(t, input)
 
 	array, ok := evaluated.(*object.Array)
 	if !ok {
@@ -472,21 +484,21 @@ func TestArrayIndexExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{"[1,2,3][0]", 1},
-		{"[1,2,3][1]", 2},
-		{"[1,2,3][2]", 3},
+		{"[1,2,3][0];", 1},
+		{"[1,2,3][1];", 2},
+		{"[1,2,3][2];", 3},
 		{"var i = 0; [1][i];", 1},
-		{"[1,2,3][1 + 1]", 3},
-		{"var myArray = [1, 2, 3]; myArray[0]", 1},
-		{"var myArray = [1, 2, 3]; myArray[0] + myArray[2]", 4},
-		{"[1, 2, 3][-1]", "index out of boundaries"},
-		{"[1, 2, 3][3]", "index out of boundaries"},
-		{"[1, 2, 3][true]", "index operator not supported: ARRAY[BOOLEAN]"},
-		{"54[1]", "index operator not supported: INTEGER[INTEGER]"},
+		{"[1,2,3][1 + 1];", 3},
+		{"var myArray = [1, 2, 3]; myArray[0];", 1},
+		{"var myArray = [1, 2, 3]; myArray[0] + myArray[2];", 4},
+		{"[1, 2, 3][-1];", "index out of boundaries"},
+		{"[1, 2, 3][3];", "index out of boundaries"},
+		{"[1, 2, 3][true];", "index operator not supported: ARRAY[BOOLEAN]"},
+		{"54[1];", "index operator not supported: INTEGER[INTEGER]"},
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
 			testIntegerObject(t, evaluated, int64(integer))
@@ -506,7 +518,7 @@ func TestHashLiterals(t *testing.T) {
 		4: 4,
 		true: 5,
 		false: 6,
-	}
+	};
 	`
 	expected := map[object.HashKey]int64{
 		(&object.String{Value: "one"}).HashKey():   1,
@@ -517,7 +529,7 @@ func TestHashLiterals(t *testing.T) {
 		FALSE.HashKey():                            6,
 	}
 
-	evaluated := testEval(input)
+	evaluated := testEval(t, input)
 	result, ok := evaluated.(*object.Hash)
 	if !ok {
 		t.Fatalf("Eval didn't return Hash. got=%T (%+v)", evaluated, evaluated)
@@ -542,17 +554,17 @@ func TestHashIndexExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`{"foo": 1}["foo"]`, 1},
-		{`{"foo": 5}["bar"]`, "No hash pair with a given key"},
-		{`var key = "foo"; {"foo": 5}[key]`, 5},
-		{`{}["foo"]`, "No hash pair with a given key"},
-		{`{5: 10}[5]`, 10},
-		{`{true: 5}[true]`, 5},
-		{`{false: 5}[false]`, 5},
+		{`{"foo": 1}["foo"];`, 1},
+		{`{"foo": 5}["bar"];`, "No hash pair with a given key"},
+		{`var key = "foo"; {"foo": 5}[key];`, 5},
+		{`{}["foo"];`, "No hash pair with a given key"},
+		{`{5: 10}[5];`, 10},
+		{`{true: 5}[true];`, 5},
+		{`{false: 5}[false];`, 5},
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
 			testIntegerObject(t, evaluated, int64(integer))

@@ -62,6 +62,9 @@ type Parser struct {
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.lexer.NextToken()
+	if p.curToken.Type == token.ILLEGAL {
+		p.illegalTokenError(p.curToken.LineNumber)
+	}
 }
 
 func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFunc) {
@@ -325,7 +328,7 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefixFunc := p.prefixParseFuncs[p.curToken.Type]
 	if prefixFunc == nil {
-		p.noPrefixParseFuncError(p.curToken.Type)
+		// TODO: ignac obczaj: p.noPrefixParseFuncError(p.curToken.LineNumber)
 		return nil
 	}
 	leftExp := prefixFunc()
@@ -345,8 +348,14 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 }
 
 // Returns a error message if wrong operator was used as prefix operator. e.g. in "*5;" statement.
-func (p *Parser) noPrefixParseFuncError(t token.Type) {
-	msg := fmt.Sprintf("no prefix parse function for %s found", t)
+func (p *Parser) noPrefixParseFuncError(line int) {
+	msg := fmt.Sprintf("Undefined token on line: %d", line)
+	p.errors = append(p.errors, msg)
+}
+
+// Returns a error message if wrong operator was used as prefix operator. e.g. in "*5;" statement.
+func (p *Parser) illegalTokenError(line int) {
+	msg := fmt.Sprintf("Undefined token on line: %d", line)
 	p.errors = append(p.errors, msg)
 }
 
@@ -388,7 +397,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		msg := fmt.Sprintf("Could not parse %q as integer on line: %d", p.curToken.Literal, p.lexer.RowNum)
 		p.errors = append(p.errors, msg)
 
 		return nil

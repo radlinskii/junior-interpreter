@@ -214,8 +214,10 @@ func (p *Parser) checkIfOverridesBuiltin() {
 }
 
 func (p *Parser) semiError() {
-	msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
-	p.errors = append(p.errors, msg)
+	if p.curToken.Type != token.SEMICOLON {
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
+		p.errors = append(p.errors, msg)
+	}
 }
 
 // parses production of var statement --> "var" <ident> "=" <expression> ";"

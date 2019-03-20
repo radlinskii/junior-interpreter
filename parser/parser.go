@@ -30,6 +30,9 @@ const (
 	INDEX
 )
 
+// list of built-in functions defined in evaluator/builtins.go
+var builtins = map[string]bool{"len": true, "print": true, "first": true, "last": true, "rest": true}
+
 var precedences = map[token.Type]int{
 	token.EQ:       EQUALS,
 	token.NEQ:      EQUALS,
@@ -200,7 +203,18 @@ func (p *Parser) expectPeek(t token.Type) bool {
 // creates an error and adds it to the parser errors list
 func (p *Parser) peekError(t token.Type) {
 	msg := fmt.Sprintf("unexpected token: %q (expected: %q) at line: %d", p.peekToken.Type, t, p.lexer.RowNum)
+	p.errors = append(p.errors, msg)
+}
 
+func (p *Parser) checkIfOverridesBuiltin() {
+	if _, ok := builtins[p.curToken.Literal]; ok {
+		msg := fmt.Sprintf("cannot override built-in function: %q at line: %d", p.curToken.Literal, p.curToken.LineNumber)
+		p.errors = append(p.errors, msg)
+	}
+}
+
+func (p *Parser) semiError() {
+	msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
 	p.errors = append(p.errors, msg)
 }
 
@@ -211,6 +225,8 @@ func (p *Parser) parseVarStatement() ast.Statement {
 	if !p.expectPeek(token.IDENT) {
 		return nil
 	}
+
+	p.checkIfOverridesBuiltin()
 
 	stmnt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
@@ -225,8 +241,7 @@ func (p *Parser) parseVarStatement() ast.Statement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
-		p.errors = append(p.errors, msg)
+		p.semiError()
 	}
 
 	return stmnt
@@ -243,8 +258,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
-		p.errors = append(p.errors, msg)
+		p.semiError()
 	}
 
 	return stmnt
@@ -261,8 +275,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
-		p.errors = append(p.errors, msg)
+		p.semiError()
 	}
 
 	return stmnt
@@ -465,12 +478,16 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 
 	p.nextToken()
 
+	p.checkIfOverridesBuiltin()
+
 	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 	identifiers = append(identifiers, ident)
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
+
+		p.checkIfOverridesBuiltin()
 
 		ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 		identifiers = append(identifiers, ident)

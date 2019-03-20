@@ -138,7 +138,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 // checkIfIllegal kills the parser if illegal character was found.
 func (p *Parser) checkIfIllegal() {
 	if p.curToken.Type == token.ILLEGAL {
-		fmt.Printf("FATAL ERROR: illegal character %s on line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
+		fmt.Printf("FATAL ERROR: illegal character: %q at line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
 		os.Exit(1)
 	}
 }
@@ -199,7 +199,7 @@ func (p *Parser) expectPeek(t token.Type) bool {
 
 // creates an error and adds it to the parser errors list
 func (p *Parser) peekError(t token.Type) {
-	msg := fmt.Sprintf("Unexpected token %s on line %d, expected %s.\n", p.peekToken.Type, p.lexer.RowNum, t)
+	msg := fmt.Sprintf("unexpected token: %q (expected: %q) at line: %d", p.peekToken.Type, t, p.lexer.RowNum)
 
 	p.errors = append(p.errors, msg)
 }
@@ -224,6 +224,9 @@ func (p *Parser) parseVarStatement() ast.Statement {
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
+	} else {
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.lexer.RowNum)
+		p.errors = append(p.errors, msg)
 	}
 
 	return stmnt
@@ -366,7 +369,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 // Returns a error message if wrong operator was used as prefix operator. e.g. in "*5;" statement.
 func (p *Parser) noPrefixParseFuncError(t token.Token) {
-	msg := fmt.Sprintf("Unexpected token %s on line: %d", t.Literal, t.LineNumber)
+	msg := fmt.Sprintf("unexpected token: %q at line: %d", t.Literal, t.LineNumber)
 	p.errors = append(p.errors, msg)
 }
 
@@ -408,7 +411,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("Could not parse %q as integer on line: %d", p.curToken.Literal, p.lexer.RowNum)
+		msg := fmt.Sprintf("could not parse: %q as integer at line: %d", p.curToken.Literal, p.lexer.RowNum)
 		p.errors = append(p.errors, msg)
 
 		return nil

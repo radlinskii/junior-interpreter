@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/radlinskii/interpreter/ast"
@@ -62,9 +63,7 @@ type Parser struct {
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.lexer.NextToken()
-	if p.curToken.Type == token.ILLEGAL {
-		p.illegalTokenError(p.curToken.LineNumber)
-	}
+	p.checkIfIllegal()
 }
 
 func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFunc) {
@@ -132,6 +131,14 @@ func (p *Parser) ParseProgram() *ast.Program {
 	}
 
 	return program
+}
+
+// checkIfIllegal kills the parser if illegal character was found.
+func (p *Parser) checkIfIllegal() {
+	if p.curToken.Type == token.ILLEGAL {
+		fmt.Printf("FATAL ERROR: illegal character %s on line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
+		os.Exit(1)
+	}
 }
 
 // Errors returns the errors that occurred during the semantic analysis.
@@ -233,7 +240,6 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmnt := &ast.ExpressionStatement{Token: p.curToken}
 
 	stmnt.Expression = p.parseExpression(LOWEST)
-	p.nextToken()
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
@@ -328,7 +334,7 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefixFunc := p.prefixParseFuncs[p.curToken.Type]
 	if prefixFunc == nil {
-		// TODO: ignac obczaj: p.noPrefixParseFuncError(p.curToken.LineNumber)
+		p.noPrefixParseFuncError(p.curToken)
 		return nil
 	}
 	leftExp := prefixFunc()
@@ -348,14 +354,8 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 }
 
 // Returns a error message if wrong operator was used as prefix operator. e.g. in "*5;" statement.
-func (p *Parser) noPrefixParseFuncError(line int) {
-	msg := fmt.Sprintf("Undefined token on line: %d", line)
-	p.errors = append(p.errors, msg)
-}
-
-// Returns a error message if wrong operator was used as prefix operator. e.g. in "*5;" statement.
-func (p *Parser) illegalTokenError(line int) {
-	msg := fmt.Sprintf("Undefined token on line: %d", line)
+func (p *Parser) noPrefixParseFuncError(t token.Token) {
+	msg := fmt.Sprintf("Unexpected token %s on line: %d", t.Literal, t.LineNumber)
 	p.errors = append(p.errors, msg)
 }
 

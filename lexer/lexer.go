@@ -85,7 +85,7 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.EQ, Literal: "=="}
+			tok = token.Token{Type: token.EQ, Literal: "==", LineNumber: l.RowNum}
 		} else {
 			tok = newToken(token.ASSIGN, l.ch, l.RowNum)
 		}
@@ -96,7 +96,7 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case '!':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.NEQ, Literal: "!="}
+			tok = token.Token{Type: token.NEQ, Literal: "!=", LineNumber: l.RowNum}
 		} else {
 			tok = newToken(token.BANG, l.ch, l.RowNum)
 		}
@@ -114,14 +114,14 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case '<':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.LTE, Literal: "<="}
+			tok = token.Token{Type: token.LTE, Literal: "<=", LineNumber: l.RowNum}
 		} else {
 			tok = newToken(token.LT, l.ch, l.RowNum)
 		}
 	case '>':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.GTE, Literal: ">="}
+			tok = token.Token{Type: token.GTE, Literal: ">=", LineNumber: l.RowNum}
 		} else {
 			tok = newToken(token.GT, l.ch, l.RowNum)
 		}
@@ -146,18 +146,22 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
+		tok.LineNumber = l.RowNum
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
+		tok.LineNumber = l.RowNum
 	default:
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdent()
 			// check if the read identifier is a keyword
 			tok.Type = token.LookUpIdent(tok.Literal)
+			tok.LineNumber = l.RowNum
 			return tok
 		} else if isDigit(l.ch) {
 			tok.Type = token.INT
 			tok.Literal = l.readNumber()
+			tok.LineNumber = l.RowNum
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch, l.RowNum)

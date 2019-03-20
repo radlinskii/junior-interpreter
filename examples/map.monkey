@@ -7,7 +7,7 @@ var map = fun(arr, fn) {
         return iter(rest(arr), push(accumulator, fn(first(arr))));
     };
 
-    return iter(arr, [])
+    return iter(arr, []);
 };
 
 var a = [1,2,3,4,5];

@@ -225,7 +225,7 @@ func (p *Parser) parseVarStatement() ast.Statement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		msg := fmt.Sprintf("expected semicolon at line: %d", p.lexer.RowNum)
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
 		p.errors = append(p.errors, msg)
 	}
 
@@ -243,7 +243,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		msg := fmt.Sprintf("expected semicolon at line: %d", p.lexer.RowNum)
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
 		p.errors = append(p.errors, msg)
 	}
 
@@ -261,7 +261,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		msg := fmt.Sprintf("expected semicolon at line: %d", p.lexer.RowNum)
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
 		p.errors = append(p.errors, msg)
 	}
 
@@ -417,7 +417,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse: %q as integer at line: %d", p.curToken.Literal, p.lexer.RowNum)
+		msg := fmt.Sprintf("could not parse: %q as integer at line: %d", p.curToken.Literal, p.curToken.LineNumber)
 		p.errors = append(p.errors, msg)
 
 		return nil

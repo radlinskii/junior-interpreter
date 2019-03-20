@@ -242,6 +242,9 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
+	} else {
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.lexer.RowNum)
+		p.errors = append(p.errors, msg)
 	}
 
 	return stmnt
@@ -257,6 +260,9 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
+	} else {
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.lexer.RowNum)
+		p.errors = append(p.errors, msg)
 	}
 
 	return stmnt

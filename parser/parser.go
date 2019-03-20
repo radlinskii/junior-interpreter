@@ -130,6 +130,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 		p.nextToken()
 	}
 
+	p.printErrors()
+
 	return program
 }
 
@@ -138,6 +140,15 @@ func (p *Parser) checkIfIllegal() {
 	if p.curToken.Type == token.ILLEGAL {
 		fmt.Printf("FATAL ERROR: illegal character %s on line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
 		os.Exit(1)
+	}
+}
+
+func (p *Parser) printErrors() {
+	if len(p.errors) != 0 {
+		for _, msg := range p.Errors() {
+			fmt.Println("ERROR: " + msg)
+		}
+		fmt.Println("")
 	}
 }
 

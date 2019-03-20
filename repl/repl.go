@@ -35,13 +35,6 @@ func Start(in io.Reader, out io.Writer) {
 		p := parser.New(l)
 		program := p.ParseProgram()
 
-		if len(p.Errors()) != 0 {
-			for _, msg := range p.Errors() {
-				io.WriteString(out, "\t"+msg+"\n")
-			}
-			continue
-		}
-
 		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())

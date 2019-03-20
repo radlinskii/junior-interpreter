@@ -31,12 +31,6 @@ func main() {
 	p := parser.New(l)
 	program := p.ParseProgram()
 
-	if len(p.Errors()) != 0 {
-		for _, msg := range p.Errors() {
-			fmt.Println("ERROR: " + msg + "\n")
-		}
-	}
-
 	env := object.NewEnvironment()
 	evaluator.Eval(program, env)
 }

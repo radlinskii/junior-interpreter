@@ -213,7 +213,7 @@ func (p *Parser) checkIfOverridesBuiltin() {
 	}
 }
 
-func (p *Parser) semiError() {
+func (p *Parser) semicolonError() {
 	if p.curToken.Type != token.SEMICOLON {
 		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
 		p.errors = append(p.errors, msg)
@@ -243,7 +243,7 @@ func (p *Parser) parseVarStatement() ast.Statement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		p.semiError()
+		p.semicolonError()
 	}
 
 	return stmnt
@@ -260,7 +260,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		p.semiError()
+		p.semicolonError()
 	}
 
 	return stmnt
@@ -277,7 +277,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	} else {
-		p.semiError()
+		p.semicolonError()
 	}
 
 	return stmnt

@@ -7,7 +7,7 @@ import (
 )
 
 var builtins = map[string]*object.Builtin{
-	"len": &object.Builtin{
+	"len": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d want=1", len(args))
@@ -24,7 +24,7 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
-	"first": &object.Builtin{
+	"first": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d want=1", len(args))
@@ -41,7 +41,7 @@ var builtins = map[string]*object.Builtin{
 			return NULL
 		},
 	},
-	"last": &object.Builtin{
+	"last": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d want=1", len(args))
@@ -59,7 +59,7 @@ var builtins = map[string]*object.Builtin{
 			return NULL
 		},
 	},
-	"rest": &object.Builtin{
+	"rest": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d want=1", len(args))
@@ -80,7 +80,7 @@ var builtins = map[string]*object.Builtin{
 			return NULL
 		},
 	},
-	"push": &object.Builtin{
+	"push": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 2 {
 				return newError("wrong number of arguments. got=%d want=2", len(args))
@@ -98,7 +98,7 @@ var builtins = map[string]*object.Builtin{
 			return &object.Array{Elements: newElements}
 		},
 	},
-	"print": &object.Builtin{
+	"print": {
 		Fn: func(args ...object.Object) object.Object {
 			for _, arg := range args {
 				fmt.Print(arg.Inspect() + " ")

@@ -53,9 +53,6 @@ func (l *Lexer) skipOneLineComment() {
 	for l.ch != '\n' && l.ch != '\r' && l.ch != 0 {
 		l.readChar()
 	}
-	if l.ch == '\n' || l.ch == '\r' {
-		l.RowNum++
-	}
 }
 
 func (l *Lexer) skipMultipleLineComment() {
@@ -88,23 +85,23 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.EQ, Literal: "=="}
+			tok = token.Token{Type: token.EQ, Literal: "==", LineNumber: l.RowNum}
 		} else {
-			tok = newToken(token.ASSIGN, l.ch)
+			tok = newToken(token.ASSIGN, l.ch, l.RowNum)
 		}
 	case '+':
-		tok = newToken(token.PLUS, l.ch)
+		tok = newToken(token.PLUS, l.ch, l.RowNum)
 	case '-':
-		tok = newToken(token.MINUS, l.ch)
+		tok = newToken(token.MINUS, l.ch, l.RowNum)
 	case '!':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.NEQ, Literal: "!="}
+			tok = token.Token{Type: token.NEQ, Literal: "!=", LineNumber: l.RowNum}
 		} else {
-			tok = newToken(token.BANG, l.ch)
+			tok = newToken(token.BANG, l.ch, l.RowNum)
 		}
 	case '*':
-		tok = newToken(token.ASTERISK, l.ch)
+		tok = newToken(token.ASTERISK, l.ch, l.RowNum)
 	case '/':
 		if l.peekChar() == '/' {
 			l.skipOneLineComment()
@@ -113,57 +110,61 @@ func (l *Lexer) NextToken() (tok token.Token) {
 			l.skipMultipleLineComment()
 			return l.NextToken()
 		}
-		tok = newToken(token.SLASH, l.ch)
+		tok = newToken(token.SLASH, l.ch, l.RowNum)
 	case '<':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.LTE, Literal: "<="}
+			tok = token.Token{Type: token.LTE, Literal: "<=", LineNumber: l.RowNum}
 		} else {
-			tok = newToken(token.LT, l.ch)
+			tok = newToken(token.LT, l.ch, l.RowNum)
 		}
 	case '>':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.Token{Type: token.GTE, Literal: ">="}
+			tok = token.Token{Type: token.GTE, Literal: ">=", LineNumber: l.RowNum}
 		} else {
-			tok = newToken(token.GT, l.ch)
+			tok = newToken(token.GT, l.ch, l.RowNum)
 		}
 	case ',':
-		tok = newToken(token.COMMA, l.ch)
+		tok = newToken(token.COMMA, l.ch, l.RowNum)
 	case ';':
-		tok = newToken(token.SEMICOLON, l.ch)
+		tok = newToken(token.SEMICOLON, l.ch, l.RowNum)
 	case '(':
-		tok = newToken(token.LPAREN, l.ch)
+		tok = newToken(token.LPAREN, l.ch, l.RowNum)
 	case ')':
-		tok = newToken(token.RPAREN, l.ch)
+		tok = newToken(token.RPAREN, l.ch, l.RowNum)
 	case '{':
-		tok = newToken(token.LBRACE, l.ch)
+		tok = newToken(token.LBRACE, l.ch, l.RowNum)
 	case '}':
-		tok = newToken(token.RBRACE, l.ch)
+		tok = newToken(token.RBRACE, l.ch, l.RowNum)
 	case '[':
-		tok = newToken(token.LBRACKET, l.ch)
+		tok = newToken(token.LBRACKET, l.ch, l.RowNum)
 	case ']':
-		tok = newToken(token.RBRACKET, l.ch)
+		tok = newToken(token.RBRACKET, l.ch, l.RowNum)
 	case ':':
-		tok = newToken(token.COLON, l.ch)
+		tok = newToken(token.COLON, l.ch, l.RowNum)
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
+		tok.LineNumber = l.RowNum
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
+		tok.LineNumber = l.RowNum
 	default:
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdent()
 			// check if the read identifier is a keyword
 			tok.Type = token.LookUpIdent(tok.Literal)
+			tok.LineNumber = l.RowNum
 			return tok
 		} else if isDigit(l.ch) {
 			tok.Type = token.INT
 			tok.Literal = l.readNumber()
+			tok.LineNumber = l.RowNum
 			return tok
 		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
+			tok = newToken(token.ILLEGAL, l.ch, l.RowNum)
 		}
 	}
 	l.readChar()
@@ -209,6 +210,6 @@ func isDigit(ch byte) bool {
 }
 
 // create new token with given values
-func newToken(tokenType token.Type, ch byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch)}
+func newToken(tokenType token.Type, ch byte, lineNum int) token.Token {
+	return token.Token{Type: tokenType, Literal: string(ch), LineNumber: lineNum}
 }

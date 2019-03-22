@@ -124,7 +124,7 @@ func TestIdentifierExpression(t *testing.T) {
 	}{
 		{"foo;", "foo"},
 		{"bar;", "bar"},
-		{"baz", "baz"},
+		{"baz;", "baz"},
 	}
 	for _, tt := range tests {
 		program := testParsingInput(t, tt.input, 1)
@@ -146,7 +146,7 @@ func TestIntegerLiteralExpression(t *testing.T) {
 		expected int64
 	}{
 		{"5;", 5},
-		{"15", 15},
+		{"15;", 15},
 	}
 	for _, tt := range tests {
 		program := testParsingInput(t, tt.input, 1)
@@ -168,7 +168,7 @@ func TestBooleanLiteralExpression(t *testing.T) {
 		expected bool
 	}{
 		{"true;", true},
-		{"false", false},
+		{"false;", false},
 	}
 	for _, tt := range tests {
 		program := testParsingInput(t, tt.input, 1)
@@ -190,9 +190,9 @@ func TestParsingPrefixExpressions(t *testing.T) {
 		value    interface{}
 	}{
 		{"!5;", "!", 5},
-		{"-15", "-", 15},
-		{"!true", "!", true},
-		{"!false", "!", false},
+		{"-15;", "-", 15},
+		{"!true;", "!", true},
+		{"!false;", "!", false},
 	}
 
 	for _, tt := range tests {
@@ -254,24 +254,24 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"false;", "false"},
 		{"5+2 == 7;", "((5 + 2) == 7)"},
 		{" 5+2 == 7 == true;", "(((5 + 2) == 7) == true)"},
-		{"-a * b", "((-a) * b)"},
-		{"a + b + c", "((a + b) + c)"},
-		{"a + b - c", "((a + b) - c)"},
-		{"a + -b", "(a + (-b))"},
-		{"a * b + c", "((a * b) + c)"},
-		{"a + b / c", "(a + (b / c))"},
-		{"5 > 4 == 2 < 3", "((5 > 4) == (2 < 3))"},
-		{"5 * 4 > 2 / 3 + 1", "((5 * 4) > ((2 / 3) + 1))"},
-		{"1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"},
-		{"(5 + 5) * 2", "((5 + 5) * 2)"},
-		{"10 / (5 + 5)", "(10 / (5 + 5))"},
-		{"-(2 + 3)", "(-(2 + 3))"},
-		{"!(true  == true)", "(!(true == true))"},
-		{"a + add(b * c) + d", "((a + add((b * c))) + d)"},
-		{"add(1,2+3,add(4,5))", "add(1, (2 + 3), add(4, 5))"},
-		{"add(a+b+c*d/f, g)", "add(((a + b) + ((c * d) / f)), g)"},
-		{"a * [1, 2, 3, 4][b*c] * d", "((a * ([1, 2, 3, 4][(b * c)])) * d)"},
-		{"add(a * b[2], b[1], 2 * [1, 2][1])", "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"},
+		{"-a * b;", "((-a) * b)"},
+		{"a + b + c;", "((a + b) + c)"},
+		{"a + b - c;", "((a + b) - c)"},
+		{"a + -b;", "(a + (-b))"},
+		{"a * b + c;", "((a * b) + c)"},
+		{"a + b / c;", "(a + (b / c))"},
+		{"5 > 4 == 2 < 3;", "((5 > 4) == (2 < 3))"},
+		{"5 * 4 > 2 / 3 + 1;", "((5 * 4) > ((2 / 3) + 1))"},
+		{"1 + (2 + 3) + 4;", "((1 + (2 + 3)) + 4)"},
+		{"(5 + 5) * 2;", "((5 + 5) * 2)"},
+		{"10 / (5 + 5);", "(10 / (5 + 5))"},
+		{"-(2 + 3);", "(-(2 + 3))"},
+		{"!(true  == true);", "(!(true == true))"},
+		{"a + add(b * c) + d;", "((a + add((b * c))) + d)"},
+		{"add(1,2+3,add(4,5));", "add(1, (2 + 3), add(4, 5))"},
+		{"add(a+b+c*d/f, g);", "add(((a + b) + ((c * d) / f)), g)"},
+		{"a * [1, 2, 3, 4][b*c] * d;", "((a * ([1, 2, 3, 4][(b * c)])) * d)"},
+		{"add(a * b[2], b[1], 2 * [1, 2][1]);", "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"},
 	}
 
 	for _, tt := range tests {
@@ -473,7 +473,7 @@ func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
 }
 
 func TestFunctionLiteral(t *testing.T) {
-	input := `fun(x,y) {x + y;}`
+	input := `fun(x,y) {x + y;};`
 
 	program := testParsingInput(t, input, 1)
 
@@ -592,7 +592,7 @@ func testStringLiteral(t *testing.T, exp ast.Expression, expected string) bool {
 }
 
 func TestParsingArrayLiterals(t *testing.T) {
-	input := `[1, 2 * 2, true, "word"]`
+	input := `[1, 2 * 2, true, "word"];`
 
 	program := testParsingInput(t, input, 1)
 
@@ -633,7 +633,7 @@ func TestParsingIndexExpression(t *testing.T) {
 	testInfixExpression(t, indexExp.Right, 2, "+", 2)
 }
 func TestParsingHashLiteralsStringKeys(t *testing.T) {
-	input := `{"one": 1, "two": 2, "three": 3}`
+	input := `{"one": 1, "two": 2, "three": 3};`
 	expected := map[string]int64{
 		"one":   1,
 		"two":   2,

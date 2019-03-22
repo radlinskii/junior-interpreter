@@ -5,8 +5,9 @@ type Type string
 
 // Token is the lexical symbol that gets returned after performing lexical analysis.
 type Token struct {
-	Type    Type
-	Literal string
+	Type       Type
+	Literal    string
+	LineNumber int
 }
 
 const (

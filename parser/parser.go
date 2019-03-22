@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/radlinskii/interpreter/ast"
@@ -28,6 +29,9 @@ const (
 	// INDEX == 8 precedence for "[x]" opertor
 	INDEX
 )
+
+// list of built-in functions defined in evaluator/builtins.go
+var builtins = map[string]bool{"len": true, "print": true, "first": true, "last": true, "rest": true}
 
 var precedences = map[token.Type]int{
 	token.EQ:       EQUALS,
@@ -62,6 +66,7 @@ type Parser struct {
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.lexer.NextToken()
+	p.checkIfIllegal()
 }
 
 func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFunc) {
@@ -128,7 +133,26 @@ func (p *Parser) ParseProgram() *ast.Program {
 		p.nextToken()
 	}
 
+	p.printErrors()
+
 	return program
+}
+
+// checkIfIllegal kills the parser if illegal character was found.
+func (p *Parser) checkIfIllegal() {
+	if p.curToken.Type == token.ILLEGAL {
+		fmt.Printf("FATAL ERROR: illegal character: %q at line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
+		os.Exit(1)
+	}
+}
+
+func (p *Parser) printErrors() {
+	if len(p.errors) != 0 {
+		for _, msg := range p.Errors() {
+			fmt.Println("ERROR: " + msg)
+		}
+		fmt.Println("")
+	}
 }
 
 // Errors returns the errors that occurred during the semantic analysis.
@@ -178,9 +202,22 @@ func (p *Parser) expectPeek(t token.Type) bool {
 
 // creates an error and adds it to the parser errors list
 func (p *Parser) peekError(t token.Type) {
-	msg := fmt.Sprintf("Unexpected token %s on line %d, expected %s.\n", p.peekToken.Type, p.lexer.RowNum, t)
-
+	msg := fmt.Sprintf("unexpected token: %q (expected: %q) at line: %d", p.peekToken.Type, t, p.lexer.RowNum)
 	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) checkIfOverridesBuiltin() {
+	if _, ok := builtins[p.curToken.Literal]; ok {
+		msg := fmt.Sprintf("cannot override built-in function: %q at line: %d", p.curToken.Literal, p.curToken.LineNumber)
+		p.errors = append(p.errors, msg)
+	}
+}
+
+func (p *Parser) semicolonError() {
+	if p.curToken.Type != token.SEMICOLON {
+		msg := fmt.Sprintf("expected semicolon at line: %d", p.curToken.LineNumber)
+		p.errors = append(p.errors, msg)
+	}
 }
 
 // parses production of var statement --> "var" <ident> "=" <expression> ";"
@@ -190,6 +227,8 @@ func (p *Parser) parseVarStatement() ast.Statement {
 	if !p.expectPeek(token.IDENT) {
 		return nil
 	}
+
+	p.checkIfOverridesBuiltin()
 
 	stmnt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
@@ -203,6 +242,8 @@ func (p *Parser) parseVarStatement() ast.Statement {
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
+	} else {
+		p.semicolonError()
 	}
 
 	return stmnt
@@ -218,6 +259,8 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
+	} else {
+		p.semicolonError()
 	}
 
 	return stmnt
@@ -230,10 +273,11 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmnt := &ast.ExpressionStatement{Token: p.curToken}
 
 	stmnt.Expression = p.parseExpression(LOWEST)
-	p.nextToken()
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
+	} else {
+		p.semicolonError()
 	}
 
 	return stmnt
@@ -325,7 +369,7 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefixFunc := p.prefixParseFuncs[p.curToken.Type]
 	if prefixFunc == nil {
-		p.noPrefixParseFuncError(p.curToken.Type)
+		p.noPrefixParseFuncError(p.curToken)
 		return nil
 	}
 	leftExp := prefixFunc()
@@ -345,8 +389,8 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 }
 
 // Returns a error message if wrong operator was used as prefix operator. e.g. in "*5;" statement.
-func (p *Parser) noPrefixParseFuncError(t token.Type) {
-	msg := fmt.Sprintf("no prefix parse function for %s found", t)
+func (p *Parser) noPrefixParseFuncError(t token.Token) {
+	msg := fmt.Sprintf("unexpected token: %q at line: %d", t.Literal, t.LineNumber)
 	p.errors = append(p.errors, msg)
 }
 
@@ -388,7 +432,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		msg := fmt.Sprintf("could not parse: %q as integer at line: %d", p.curToken.Literal, p.curToken.LineNumber)
 		p.errors = append(p.errors, msg)
 
 		return nil
@@ -436,12 +480,16 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 
 	p.nextToken()
 
+	p.checkIfOverridesBuiltin()
+
 	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 	identifiers = append(identifiers, ident)
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
+
+		p.checkIfOverridesBuiltin()
 
 		ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 		identifiers = append(identifiers, ident)

@@ -14,6 +14,8 @@ var (
 	FALSE = &object.Boolean{Value: false}
 	// NULL is a single object that all the appeareances of nodes without a value will point to.
 	NULL = &object.Null{}
+	// VOID is a single object that all the appeareances of nodes without a value will point to.
+	VOID = &object.Void{}
 )
 
 // Eval evaluates the program
@@ -22,16 +24,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	// Statements
 	case *ast.Program:
 		return evalProgram(node, env)
-	case *ast.ExpressionStatement:
-		return Eval(node.Expression, env)
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
+	case *ast.ExpressionStatement:
+		return Eval(node.Expression, env)
+	case *ast.IfStatement:
+		return evalIfStatement(node, env)
 	case *ast.ReturnStatement:
-		val := Eval(node.ReturnValue, env)
-		if isError(val) {
-			return val
-		}
-		return &object.Return{Value: val}
+		return evalReturnStatement(node, env)
 	case *ast.VarStatement:
 		val := Eval(node.Value, env)
 		if isError(val) {
@@ -61,8 +61,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return right
 		}
 		return evalInfixExpression(node.Operator, left, right)
-	case *ast.IfStatement:
-		return evalIfStatement(node, env)
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
 	case *ast.FunctionLiteral:
@@ -110,7 +108,7 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 
 		switch result := result.(type) {
 		case *object.Return:
-			return result.Value
+			return newError("return statement not perrmitted outside function body")
 		case *object.Error:
 			return result
 		}
@@ -309,7 +307,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 	pair, ok := hashObject.Pairs[key.HashKey()]
 	if !ok {
-		return newError("No hash pair with a given key") // TODO: add name of the key
+		return newError("No hash pair in %q with key %q", hash.Inspect(), index.Inspect())
 	}
 
 	return pair.Value
@@ -355,21 +353,50 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 	return result
 }
 
-func applyFunction(fun object.Object, args []object.Object) object.Object {
+func evalReturnStatement(rs *ast.ReturnStatement, env *object.Environment) object.Object {
+	if rs.ReturnValue == nil {
+		return VOID
+	}
+	val := Eval(rs.ReturnValue, env)
+	if isError(val) {
+		return val
+	}
+	return &object.Return{Value: val}
+}
 
+func applyFunction(fun object.Object, args []object.Object) object.Object {
 	switch function := fun.(type) {
 	case *object.Function:
 		extendedEnv := extendedFunctionEnv(function, args)
-		evaluated := Eval(function.Body, extendedEnv)
+		evaluated := evalFunctionBody(function.Body, extendedEnv)
+
 		if isError(evaluated) {
 			return evaluated
 		}
+
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
 		return function.Fn(args...)
 	default:
 		return newError("not a function: %s", function.Type())
 	}
+}
+
+func evalFunctionBody(body *ast.BlockStatement, env *object.Environment) object.Object {
+	var result object.Object
+
+	for _, stmnt := range body.Statements {
+		result = Eval(stmnt, env)
+
+		if result != nil {
+			rt := result.Type()
+			if result == VOID || rt == object.RETURN || rt == object.ERROR {
+				return result
+			}
+		}
+	}
+
+	return newError("missing return at the end of function body")
 }
 
 func extendedFunctionEnv(fun *object.Function, args []object.Object) *object.Environment {

@@ -21,6 +21,8 @@ const (
 	STRING = "STRING"
 	// NULL object type
 	NULL = "NULL"
+	// VOID object type
+	VOID = "VOID"
 	// RETURN object wrapper type
 	RETURN = "RETURN"
 	// ERROR object type
@@ -100,6 +102,19 @@ func (n *Null) Inspect() string {
 // Type returns the null object type.
 func (n *Null) Type() Type {
 	return NULL
+}
+
+// Void object.
+type Void struct{}
+
+// Inspect returns void.
+func (v *Void) Inspect() string {
+	return "null"
+}
+
+// Type returns the void object type.
+func (v *Void) Type() Type {
+	return VOID
 }
 
 // Return object is a wrapper to a object that gets returned.

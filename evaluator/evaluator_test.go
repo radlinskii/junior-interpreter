@@ -134,34 +134,33 @@ func TestIfElseStatements(t *testing.T) {
 		{`
 			if (true) {
 				if (true) {
-					return 10;
+					100;
 				}
-
-				return 20;
+				20;
 			} else {
-				return 30;
+				30;
 			}
-		`, 10},
+		`, 20},
 		{`
 			if (true) {
 				if (false) {
-					return 10;
+					10;
 				}
 
-				return 20;
+				20;
 			} else {
-				return 30;
+				30;
 			}
 		`, 20},
 		{`
 			if (false) {
 				if (false) {
-					return 10;
+					10;
 				}
 
-				return 20;
+				20;
 			} else {
-				return 30;
+				30;
 			}
 		`, 30},
 	}
@@ -186,11 +185,37 @@ func TestReturnStatements(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"2; return 10;", 10},
-		{"true; return 10;", 10},
-		{"return 10; 99;", 10},
-		{"return 2 * 5 + 2; 99;", 12},
-		{"true; return 2 + 5; false;", 7},
+		{
+			`
+			var a = fun(x) {
+				if (x <= 10) {
+					return x;
+				}
+				return 5;
+			};
+
+			a(10);`,
+			10,
+		},
+		{
+			`
+			var a = fun(x) {
+				return x*5;
+			};
+
+			a(5);`,
+			25,
+		},
+		{
+			`
+			var a = fun(x) {
+				return 10;
+				return 5;
+			};
+
+			a(10);`,
+			10,
+		},
 	}
 
 	for _, tt := range tests {
@@ -215,10 +240,45 @@ func TestErrorHandling(t *testing.T) {
 		{`5 + "worlds";`, "type mismatch: INTEGER + STRING"},
 		{`{fun(x) { return x +1; }: "Monkey"}[fun(x) { return x +1; }];`, "FUNCTION can't be used as hash key"},
 		{`{"key": "Monkey"}[fun(x) { return x +1; }];`, "index operator not supported: HASH[FUNCTION]"},
+		{`
+			var a = 5;
+			return a;`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = 5;
+			if (a < 10) {
+				return a;
+			}`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = fun(x) {
+				if (x < 10) {
+					return "dupa";
+				}
+				return "dupa";
+			};
+
+			return a(3);`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = fun(x) {
+				if (x < 10) {
+					return "duupa";
+				}
+				15;
+			};
+
+			a(20);`,
+			"missing return at the end of function body",
+		},
 	}
 
 	for _, tt := range tests {
 		if !testErrorObject(t, testEval(t, tt.input), tt.expectedMsg) {
+			t.Errorf(tt.input)
 			return
 		}
 	}
@@ -287,7 +347,7 @@ func TestFunctions(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"var identity = fun(x) { x; }; identity(5);", 5},
+		{"var identity = fun(x) { return x; }; identity(5);", 5},
 		{"var identity = fun(x) { return x; }; identity(5);", 5},
 		{"var double = fun(x) { return x * 2; }; double(5);", 10},
 		{"var add = fun(x, y) { return x + y; }; add(5, 10);", 15},
@@ -555,9 +615,9 @@ func TestHashIndexExpressions(t *testing.T) {
 		expected interface{}
 	}{
 		{`{"foo": 1}["foo"];`, 1},
-		{`{"foo": 5}["bar"];`, "No hash pair with a given key"},
+		{`{"foo": 5}["bar"];`, "No hash pair in \"{foo: 5}\" with key \"bar\""},
 		{`var key = "foo"; {"foo": 5}[key];`, 5},
-		{`{}["foo"];`, "No hash pair with a given key"},
+		{`{}["foo"];`, "No hash pair in \"{}\" with key \"foo\""},
 		{`{5: 10}[5];`, 10},
 		{`{true: 5}[true];`, 5},
 		{`{false: 5}[false];`, 5},
@@ -571,5 +631,24 @@ func TestHashIndexExpressions(t *testing.T) {
 		} else {
 			testErrorObject(t, evaluated, tt.expected.(string))
 		}
+	}
+}
+
+func TestVoidFunction(t *testing.T) {
+	input := `
+	var foo = fun(x) {
+		var b  = x + 2;
+
+		print(b);
+
+		return;
+	};
+
+	foo(4);
+	`
+
+	evaluated := testEval(t, input)
+	if evaluated != VOID {
+		t.Errorf("object is not NULL. got=%T", evaluated)
 	}
 }

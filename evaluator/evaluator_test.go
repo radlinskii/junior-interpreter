@@ -281,11 +281,27 @@ func TestErrorHandling(t *testing.T) {
 
 			print(foobar);`,
 			"unknown identifier: foobar"},
+		{`
+			var foobar = "foo";
+			if (1 < 2) {
+				var foobar = "bar";
+			}
+
+			var foobar = "baz";`,
+			`redeclared constant: "foobar" in one block`},
+		{`
+			var foobar = "foo";
+			if (1 < 2) {
+				var fizz = "bar";
+				var fizz = "baz";
+			}
+
+			print(foobar);`,
+			`redeclared constant: "fizz" in one block`},
 	}
 
 	for _, tt := range tests {
 		if !testErrorObject(t, testEval(t, tt.input), tt.expectedMsg) {
-			t.Errorf(tt.input)
 			return
 		}
 	}
@@ -678,10 +694,11 @@ func TestBlockScope(t *testing.T) {
 		{`
 		var a = 10;
 		var foo = fun(x) {
-			var a = 5;
+			var a = x + x;
 			return;
 		};
 
+		foo(a);
 		a;
 		`, 10},
 		{`

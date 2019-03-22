@@ -196,11 +196,19 @@ func NewEnclosedEnvironment(outer *Environment) *Environment {
 }
 
 // Get returns value of given key from Enviroment's map.
+// If not found, looks for value in Environment's ancestor.
 func (e *Environment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
 		obj, ok = e.outer.Get(name)
 	}
+	return obj, ok
+}
+
+// ShallowGet returns value of given key from Enviroment's map.
+func (e *Environment) ShallowGet(name string) (Object, bool) {
+	obj, ok := e.store[name]
+
 	return obj, ok
 }
 

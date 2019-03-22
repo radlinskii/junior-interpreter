@@ -1,4 +1,4 @@
-var factorial = fun(x) {
+const factorial = fun(x) {
     if (x < 1) {
         return 1;
     }

@@ -1,5 +1,5 @@
-var map = fun(arr, fn) {
-    var iter = fun(arr, accumulator) {
+const map = fun(arr, fn) {
+    const iter = fun(arr, accumulator) {
         if (len(arr) == 0) {
             return accumulator;
         }
@@ -10,7 +10,7 @@ var map = fun(arr, fn) {
     return iter(arr, []);
 };
 
-var a = [1,2,3,4,5];
-var triple = fun(x) { return x*3; };
+const a = [1,2,3,4,5];
+const triple = fun(x) { return x*3; };
 
 print(map(a, triple));

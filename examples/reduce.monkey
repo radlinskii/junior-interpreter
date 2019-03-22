@@ -1,5 +1,5 @@
-var reduce = fun(arr, initial, fn) {
-    var iter = fun(arr, result) {
+const reduce = fun(arr, initial, fn) {
+    const iter = fun(arr, result) {
         if(len(arr) == 0) {
             return result;
         }
@@ -10,7 +10,7 @@ var reduce = fun(arr, initial, fn) {
     return iter(arr, initial);
 };
 
-var sum = fun(arr) {
+const sum = fun(arr) {
     return reduce(arr, 0, fun(initial, el) {
         return initial + el;
     });

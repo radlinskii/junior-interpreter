@@ -176,8 +176,8 @@ func (p *Parser) parseIdentifier() ast.Expression {
 // returns Statement AST node created from current and following tokens.
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
-	case token.VAR:
-		return p.parseVarStatement()
+	case token.CONST:
+		return p.parseConstStatement()
 	case token.IF:
 		return p.parseIfStatement()
 	case token.RETURN:
@@ -229,8 +229,8 @@ func (p *Parser) semicolonError() {
 }
 
 // parses production of var statement --> "var" <ident> "=" <expression> ";"
-func (p *Parser) parseVarStatement() ast.Statement {
-	stmnt := &ast.VarStatement{Token: p.curToken}
+func (p *Parser) parseConstStatement() ast.Statement {
+	stmnt := &ast.ConstStatement{Token: p.curToken}
 
 	if !p.expectPeek(token.IDENT) {
 		return nil

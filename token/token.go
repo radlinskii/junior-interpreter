@@ -77,8 +77,8 @@ const (
 	FUNCTION = "FUNCTION"
 	// RETURN keyword "return"
 	RETURN = "RETURN"
-	// VAR keyword "var"
-	VAR = "VAR"
+	// CONST keyword "const"
+	CONST = "CONST"
 	// IF keyword "if"
 	IF = "IF"
 	// ELSE keyword "else"
@@ -87,7 +87,7 @@ const (
 
 var keywords = map[string]Type{
 	"fun":    FUNCTION,
-	"var":    VAR,
+	"const":  CONST,
 	"return": RETURN,
 	"true":   TRUE,
 	"false":  FALSE,

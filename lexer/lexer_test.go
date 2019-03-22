@@ -38,31 +38,31 @@ func TestNextToken1(t *testing.T) {
 
 func TestNextToken2(t *testing.T) {
 	input := `
-	var five = 5; // some one line comment
-	var ten = 10;
+	const five = 5; // some one line comment
+	const ten = 10;
 
-	var add = fun(x, y) {
+	const add = fun(x, y) {
 		return x + y;
 	};
 
-	var result = add(five, ten);
+	const result = add(five, ten);
 	`
 
 	tests := []struct {
 		expectedType    token.Type
 		expectedLiteral string
 	}{
-		{token.VAR, "var"},
+		{token.CONST, "const"},
 		{token.IDENT, "five"},
 		{token.ASSIGN, "="},
 		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
-		{token.VAR, "var"},
+		{token.CONST, "const"},
 		{token.IDENT, "ten"},
 		{token.ASSIGN, "="},
 		{token.INT, "10"},
 		{token.SEMICOLON, ";"},
-		{token.VAR, "var"},
+		{token.CONST, "const"},
 		{token.IDENT, "add"},
 		{token.ASSIGN, "="},
 		{token.FUNCTION, "fun"},
@@ -79,7 +79,7 @@ func TestNextToken2(t *testing.T) {
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
-		{token.VAR, "var"},
+		{token.CONST, "const"},
 		{token.IDENT, "result"},
 		{token.ASSIGN, "="},
 		{token.IDENT, "add"},

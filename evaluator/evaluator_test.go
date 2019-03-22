@@ -255,9 +255,9 @@ func TestErrorHandling(t *testing.T) {
 		{`
 			var a = fun(x) {
 				if (x < 10) {
-					return x;
+					return "dupa";
 				}
-				return 15;
+				return "dupa";
 			};
 
 			return a(3);`,
@@ -266,7 +266,7 @@ func TestErrorHandling(t *testing.T) {
 		{`
 			var a = fun(x) {
 				if (x < 10) {
-					return x;
+					return "duupa";
 				}
 				15;
 			};
@@ -278,6 +278,7 @@ func TestErrorHandling(t *testing.T) {
 
 	for _, tt := range tests {
 		if !testErrorObject(t, testEval(t, tt.input), tt.expectedMsg) {
+			t.Errorf(tt.input)
 			return
 		}
 	}
@@ -630,5 +631,24 @@ func TestHashIndexExpressions(t *testing.T) {
 		} else {
 			testErrorObject(t, evaluated, tt.expected.(string))
 		}
+	}
+}
+
+func TestVoidFunction(t *testing.T) {
+	input := `
+	var foo = fun(x) {
+		var b  = x + 2;
+
+		print(b);
+
+		return;
+	};
+
+	foo(4);
+	`
+
+	evaluated := testEval(t, input)
+	if evaluated != VOID {
+		t.Errorf("object is not NULL. got=%T", evaluated)
 	}
 }

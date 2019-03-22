@@ -14,6 +14,8 @@ var (
 	FALSE = &object.Boolean{Value: false}
 	// NULL is a single object that all the appeareances of nodes without a value will point to.
 	NULL = &object.Null{}
+	// VOID is a single object that all the appeareances of nodes without a value will point to.
+	VOID = &object.Void{}
 )
 
 // Eval evaluates the program
@@ -22,16 +24,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	// Statements
 	case *ast.Program:
 		return evalProgram(node, env)
-	case *ast.ExpressionStatement:
-		return Eval(node.Expression, env)
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
+	case *ast.ExpressionStatement:
+		return Eval(node.Expression, env)
+	case *ast.IfStatement:
+		return evalIfStatement(node, env)
 	case *ast.ReturnStatement:
-		val := Eval(node.ReturnValue, env)
-		if isError(val) {
-			return val
-		}
-		return &object.Return{Value: val}
+		return evalReturnStatement(node, env)
 	case *ast.VarStatement:
 		val := Eval(node.Value, env)
 		if isError(val) {
@@ -61,8 +61,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return right
 		}
 		return evalInfixExpression(node.Operator, left, right)
-	case *ast.IfStatement:
-		return evalIfStatement(node, env)
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
 	case *ast.FunctionLiteral:
@@ -355,6 +353,17 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 	return result
 }
 
+func evalReturnStatement(rs *ast.ReturnStatement, env *object.Environment) object.Object {
+	if rs.ReturnValue == nil {
+		return VOID
+	}
+	val := Eval(rs.ReturnValue, env)
+	if isError(val) {
+		return val
+	}
+	return &object.Return{Value: val}
+}
+
 func applyFunction(fun object.Object, args []object.Object) object.Object {
 	switch function := fun.(type) {
 	case *object.Function:
@@ -381,7 +390,7 @@ func evalFunctionBody(body *ast.BlockStatement, env *object.Environment) object.
 
 		if result != nil {
 			rt := result.Type()
-			if rt == object.RETURN || rt == object.ERROR {
+			if result == VOID || rt == object.RETURN || rt == object.ERROR {
 				return result
 			}
 		}

@@ -14,6 +14,6 @@ Code of interpreter for C-based programming language following the [writing an i
 - [x] running with file as an argument
 - [x] one-line comments
 - [x] multiple-lines comments
-- [ ] return statement only permitted in function's body
+- [x] return statement only permitted in function's body
 - [ ] return mandatory in function's body
 - [ ] ?? merge TRUE and FALSE tokens into one BOOLEAN token with different value

@@ -134,34 +134,33 @@ func TestIfElseStatements(t *testing.T) {
 		{`
 			if (true) {
 				if (true) {
-					return 10;
+					100;
 				}
-
-				return 20;
+				20;
 			} else {
-				return 30;
+				30;
 			}
-		`, 10},
+		`, 20},
 		{`
 			if (true) {
 				if (false) {
-					return 10;
+					10;
 				}
 
-				return 20;
+				20;
 			} else {
-				return 30;
+				30;
 			}
 		`, 20},
 		{`
 			if (false) {
 				if (false) {
-					return 10;
+					10;
 				}
 
-				return 20;
+				20;
 			} else {
-				return 30;
+				30;
 			}
 		`, 30},
 	}
@@ -186,11 +185,37 @@ func TestReturnStatements(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"2; return 10;", 10},
-		{"true; return 10;", 10},
-		{"return 10; 99;", 10},
-		{"return 2 * 5 + 2; 99;", 12},
-		{"true; return 2 + 5; false;", 7},
+		{
+			`
+			var a = fun(x) {
+				if (x <= 10) {
+					return x;
+				}
+				return 5;
+			};
+
+			a(10);`,
+			10,
+		},
+		{
+			`
+			var a = fun(x) {
+				return x*5;
+			};
+
+			a(5);`,
+			25,
+		},
+		{
+			`
+			var a = fun(x) {
+				return 10;
+				return 5;
+			};
+
+			a(10);`,
+			10,
+		},
 	}
 
 	for _, tt := range tests {
@@ -570,6 +595,43 @@ func TestHashIndexExpressions(t *testing.T) {
 			testIntegerObject(t, evaluated, int64(integer))
 		} else {
 			testErrorObject(t, evaluated, tt.expected.(string))
+		}
+	}
+}
+
+func TestRaturnOnlyPermittedInsideFunctionBody(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectedMsg string
+	}{
+		{`
+			var a = 5;
+			return a;`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = 5;
+			if (a < 10) {
+				return a;
+			}`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = fun(x) {
+				if (x < 10) {
+					return x;
+				}
+				return 5;
+			};
+
+			return a(3);`,
+			"return statement not perrmitted outside function body",
+		},
+	}
+
+	for _, tt := range tests {
+		if !testErrorObject(t, testEval(t, tt.input), tt.expectedMsg) {
+			return
 		}
 	}
 }

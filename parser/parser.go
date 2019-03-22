@@ -162,7 +162,15 @@ func (p *Parser) Errors() []string {
 
 // returns Identifier AST node created from current token
 func (p *Parser) parseIdentifier() ast.Expression {
-	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if p.peekTokenIs(token.ASSIGN) {
+		msg := fmt.Sprintf("cannot reassign constant: %q at line: %d", p.curToken.Literal, p.curToken.LineNumber)
+		p.errors = append(p.errors, msg)
+		p.nextToken() // TODO review pls
+	}
+
+	return ident
 }
 
 // returns Statement AST node created from current and following tokens.

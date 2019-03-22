@@ -309,7 +309,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 	pair, ok := hashObject.Pairs[key.HashKey()]
 	if !ok {
-		return newError("No hash pair with a given key") // TODO: add name of the key
+		return newError("No hash pair in %q with key %q", hash.Inspect(), index.Inspect())
 	}
 
 	return pair.Value

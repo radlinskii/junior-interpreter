@@ -17,4 +17,6 @@ Code of interpreter for C-based programming language following the [writing an i
 - [x] return statement only permitted in function's body
 - [x] return mandatory in function's body
 - [x] return statement can be empty if we don't want to return anything
+- [ ] forbid reassigning variable
+- [ ] forbid redeclaring variable
 - [ ] ?? merge TRUE and FALSE tokens into one BOOLEAN token with different value

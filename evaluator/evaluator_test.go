@@ -274,6 +274,13 @@ func TestErrorHandling(t *testing.T) {
 			a(20);`,
 			"missing return at the end of function body",
 		},
+		{`
+			if (1 < 2) {
+				var foobar = "baaaz";
+			}
+
+			print(foobar);`,
+			"unknown identifier: foobar"},
 	}
 
 	for _, tt := range tests {
@@ -651,4 +658,48 @@ func TestVoidFunction(t *testing.T) {
 	if evaluated != VOID {
 		t.Errorf("object is not NULL. got=%T", evaluated)
 	}
+}
+
+func TestBlockScope(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`
+		var a = 10;
+		if (1 < 10) {
+			var a = 5;
+		} else {
+			var a = 15;
+		}
+
+		a;
+		`, 10},
+		{`
+		var a = 10;
+		var foo = fun(x) {
+			var a = 5;
+			return;
+		};
+
+		a;
+		`, 10},
+		{`
+		var a = 10;
+		var foo = fun(x) {
+			var a = x / 2;
+
+			return a;
+		};
+
+		foo(a);
+		`, 5},
+	}
+
+	for _, tt := range tests {
+		if !testIntegerObject(t, testEval(t, tt.input), tt.expected) {
+			return
+		}
+	}
+
 }

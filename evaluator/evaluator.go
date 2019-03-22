@@ -120,8 +120,10 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
 
+	blockEnv := object.NewEnclosedEnvironment(env)
+
 	for _, stmnt := range block.Statements {
-		result = Eval(stmnt, env)
+		result = Eval(stmnt, blockEnv)
 
 		if result != nil {
 			rt := result.Type()
@@ -384,9 +386,10 @@ func applyFunction(fun object.Object, args []object.Object) object.Object {
 
 func evalFunctionBody(body *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
+	blockEnv := object.NewEnclosedEnvironment(env)
 
 	for _, stmnt := range body.Statements {
-		result = Eval(stmnt, env)
+		result = Eval(stmnt, blockEnv)
 
 		if result != nil {
 			rt := result.Type()

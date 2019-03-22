@@ -35,11 +35,15 @@ func Start(in io.Reader, out io.Writer) {
 		p := parser.New(l)
 		program := p.ParseProgram()
 
-		evaluated := evaluator.Eval(program, env)
-		if evaluated != nil {
-			io.WriteString(out, evaluated.Inspect())
-			io.WriteString(out, "\n")
+		if len(p.Errors()) == 0 {
+			evaluated := evaluator.Eval(program, env)
+
+			if evaluated != nil {
+				io.WriteString(out, evaluated.Inspect())
+				io.WriteString(out, "\n")
+			}
 		}
+
 	}
 }
 

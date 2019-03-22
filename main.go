@@ -30,12 +30,14 @@ func main() {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
-	env := object.NewEnvironment()
+	if len(p.Errors()) == 0 {
+		env := object.NewEnvironment()
 
-	evaluated := evaluator.Eval(program, env)
-	if evaluated != nil {
-		if evaluated.Type() == object.ERROR {
-			fmt.Println(evaluated.Inspect())
+		evaluated := evaluator.Eval(program, env)
+		if evaluated != nil {
+			if evaluated.Type() == object.ERROR {
+				fmt.Println(evaluated.Inspect())
+			}
 		}
 	}
 }

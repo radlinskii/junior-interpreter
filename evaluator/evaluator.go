@@ -356,20 +356,38 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 }
 
 func applyFunction(fun object.Object, args []object.Object) object.Object {
-
 	switch function := fun.(type) {
 	case *object.Function:
 		extendedEnv := extendedFunctionEnv(function, args)
-		evaluated := Eval(function.Body, extendedEnv)
+		evaluated := evalFunctionBody(function.Body, extendedEnv)
+
 		if isError(evaluated) {
 			return evaluated
 		}
+
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
 		return function.Fn(args...)
 	default:
 		return newError("not a function: %s", function.Type())
 	}
+}
+
+func evalFunctionBody(body *ast.BlockStatement, env *object.Environment) object.Object {
+	var result object.Object
+
+	for _, stmnt := range body.Statements {
+		result = Eval(stmnt, env)
+
+		if result != nil {
+			rt := result.Type()
+			if rt == object.RETURN || rt == object.ERROR {
+				return result
+			}
+		}
+	}
+
+	return newError("missing return at the end of function body")
 }
 
 func extendedFunctionEnv(fun *object.Function, args []object.Object) *object.Environment {

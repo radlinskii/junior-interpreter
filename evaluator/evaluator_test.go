@@ -240,6 +240,40 @@ func TestErrorHandling(t *testing.T) {
 		{`5 + "worlds";`, "type mismatch: INTEGER + STRING"},
 		{`{fun(x) { return x +1; }: "Monkey"}[fun(x) { return x +1; }];`, "FUNCTION can't be used as hash key"},
 		{`{"key": "Monkey"}[fun(x) { return x +1; }];`, "index operator not supported: HASH[FUNCTION]"},
+		{`
+			var a = 5;
+			return a;`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = 5;
+			if (a < 10) {
+				return a;
+			}`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = fun(x) {
+				if (x < 10) {
+					return x;
+				}
+				return 15;
+			};
+
+			return a(3);`,
+			"return statement not perrmitted outside function body",
+		},
+		{`
+			var a = fun(x) {
+				if (x < 10) {
+					return x;
+				}
+				15;
+			};
+
+			a(20);`,
+			"missing return at the end of function body",
+		},
 	}
 
 	for _, tt := range tests {
@@ -312,7 +346,7 @@ func TestFunctions(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"var identity = fun(x) { x; }; identity(5);", 5},
+		{"var identity = fun(x) { return x; }; identity(5);", 5},
 		{"var identity = fun(x) { return x; }; identity(5);", 5},
 		{"var double = fun(x) { return x * 2; }; double(5);", 10},
 		{"var add = fun(x, y) { return x + y; }; add(5, 10);", 15},
@@ -595,43 +629,6 @@ func TestHashIndexExpressions(t *testing.T) {
 			testIntegerObject(t, evaluated, int64(integer))
 		} else {
 			testErrorObject(t, evaluated, tt.expected.(string))
-		}
-	}
-}
-
-func TestRaturnOnlyPermittedInsideFunctionBody(t *testing.T) {
-	tests := []struct {
-		input       string
-		expectedMsg string
-	}{
-		{`
-			var a = 5;
-			return a;`,
-			"return statement not perrmitted outside function body",
-		},
-		{`
-			var a = 5;
-			if (a < 10) {
-				return a;
-			}`,
-			"return statement not perrmitted outside function body",
-		},
-		{`
-			var a = fun(x) {
-				if (x < 10) {
-					return x;
-				}
-				return 5;
-			};
-
-			return a(3);`,
-			"return statement not perrmitted outside function body",
-		},
-	}
-
-	for _, tt := range tests {
-		if !testErrorObject(t, testEval(t, tt.input), tt.expectedMsg) {
-			return
 		}
 	}
 }

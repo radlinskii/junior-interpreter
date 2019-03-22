@@ -298,6 +298,15 @@ func TestErrorHandling(t *testing.T) {
 
 			print(foobar);`,
 			`redeclared constant: "fizz" in one block`},
+		{`
+			const someFunc = fun(x) {
+				const x = "oh no!";
+
+				return;
+			};
+
+			print(someFunc("oh yes"));`,
+			`redeclared constant: "x" in one block`},
 	}
 
 	for _, tt := range tests {

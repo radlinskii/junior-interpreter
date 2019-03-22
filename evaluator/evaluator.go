@@ -395,10 +395,9 @@ func applyFunction(fun object.Object, args []object.Object) object.Object {
 
 func evalFunctionBody(body *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
-	blockEnv := object.NewEnclosedEnvironment(env)
 
 	for _, stmnt := range body.Statements {
-		result = Eval(stmnt, blockEnv)
+		result = Eval(stmnt, env)
 
 		if result != nil {
 			rt := result.Type()

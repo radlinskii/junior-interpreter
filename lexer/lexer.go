@@ -55,7 +55,7 @@ func (l *Lexer) skipOneLineComment() {
 	}
 }
 
-func (l *Lexer) skipMultipleLineComment() {
+func (l *Lexer) skipMultipleLineComment() token.Token {
 	// skipping '/*'
 	l.readChar()
 	l.readChar()
@@ -65,7 +65,7 @@ func (l *Lexer) skipMultipleLineComment() {
 			if l.peekChar() == '/' {
 				l.readChar()
 				l.readChar()
-				return
+				return l.NextToken()
 			}
 		}
 
@@ -74,7 +74,7 @@ func (l *Lexer) skipMultipleLineComment() {
 		}
 		l.readChar()
 	}
-	// todo: error if comment is not finished
+	return newToken(token.ILLEGAL, l.ch, l.RowNum)
 }
 
 // NextToken analyzes text and returns the first token it founds.
@@ -107,8 +107,7 @@ func (l *Lexer) NextToken() (tok token.Token) {
 			l.skipOneLineComment()
 			return l.NextToken()
 		} else if l.peekChar() == '*' {
-			l.skipMultipleLineComment()
-			return l.NextToken()
+			return l.skipMultipleLineComment()
 		}
 		tok = newToken(token.SLASH, l.ch, l.RowNum)
 	case '<':

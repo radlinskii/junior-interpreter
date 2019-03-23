@@ -105,10 +105,8 @@ func TestBangOperator(t *testing.T) {
 	}{
 		{"!true;", false},
 		{"!false;", true},
-		{"!5;", false},
 		{"!!true;", true},
 		{"!!false;", false},
-		{"!!5;", true},
 	}
 
 	for _, tt := range tests {
@@ -126,7 +124,7 @@ func TestIfElseStatements(t *testing.T) {
 	}{
 		{"if (true) { 10; }", 10},
 		{"if (false) { 10; }", nil},
-		{"if (1) { 10; }", 10},
+		{"if (true) { 10; }", 10},
 		{"if (1 < 2) { 10; }", 10},
 		{"if (1 > 2) { 10; }", nil},
 		{"if (1 > 2) { 10; } else { 20; }", 20},
@@ -307,6 +305,21 @@ func TestErrorHandling(t *testing.T) {
 
 			print(someFunc("oh yes"));`,
 			`redeclared constant: "x" in one block`},
+		{`
+			if (1) {
+				print("1 is truthy??");
+			} else {
+				print("there is no 'truthy'! ");
+			}`,
+			`expected BOOLEAN as condition in if-statement got: INTEGER`},
+
+		{`
+			if (!1) {
+				print("!1 is falsy??");
+			} else {
+				print("there is no 'falsy'! ");
+			}`,
+			`expected BOOLEAN in negation expression, got: INTEGER`},
 	}
 
 	for _, tt := range tests {

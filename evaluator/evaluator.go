@@ -91,7 +91,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalIndexExpression(left, right)
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env)
-	default: // TODO Error?
+	default:
 		return nil
 	}
 }
@@ -104,7 +104,7 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 
 		switch result := result.(type) {
 		case *object.Return:
-			return newError("return statement not perrmitted outside function body")
+			return newError("return statement not permitted outside function body")
 		case *object.Error:
 			return result
 		}
@@ -149,10 +149,8 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 		return FALSE
 	case FALSE:
 		return TRUE
-	case NULL:
-		return TRUE
 	default:
-		return FALSE // TODO Error?
+		return newError("expected BOOLEAN in negation expression, got: %s", right.Type())
 	}
 }
 
@@ -238,26 +236,35 @@ func evalIfStatement(ie *ast.IfStatement, env *object.Environment) object.Object
 	if isError(condition) {
 		return condition
 	}
-	if isTruthy(condition) {
+
+	isConditionTrue, ok := isTruthy(condition)
+	if !ok {
+		return newError("expected BOOLEAN as condition in if-statement got: %s", condition.Type())
+	}
+
+	if isConditionTrue {
 		return Eval(ie.Consequence, env)
 	} else if ie.Alternative != nil {
 		return Eval(ie.Alternative, env)
 	}
 
-	return NULL // TODO Error?
+	return NULL
 }
 
-func isTruthy(obj object.Object) bool {
+func isTruthy(obj object.Object) (val, ok bool) {
 	switch obj {
-	case NULL:
-		return false
 	case FALSE:
-		return false
+		val = false
+		ok = true
 	case TRUE:
-		return true
+		val = true
+		ok = true
 	default:
-		return true // TODO ERROR non boolean type is used as condition
+		val = false
+		ok = false
 	}
+
+	return
 }
 
 func evalIdentifier(i *ast.Identifier, env *object.Environment) object.Object {

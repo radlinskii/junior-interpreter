@@ -39,41 +39,41 @@ func checkParserErrors(t *testing.T, p *Parser) {
 	t.FailNow()
 }
 
-func TestVarStatements(t *testing.T) {
+func TestConstStatements(t *testing.T) {
 	tests := []struct {
 		input              string
 		expectedIdentifier string
 		expectedValue      interface{}
 	}{
-		{"var x = 5;", "x", 5},
-		{"var y = true;", "y", true},
-		{"var z = y;", "z", "y"},
+		{"const x = 5;", "x", 5},
+		{"const y = true;", "y", true},
+		{"const z = y;", "z", "y"},
 	}
 
 	for _, tt := range tests {
 		program := testParsingInput(t, tt.input, 1)
 
 		stmnt := program.Statements[0]
-		if !testVarStatement(t, stmnt, tt.expectedIdentifier) {
+		if !testConstStatement(t, stmnt, tt.expectedIdentifier) {
 			return
 		}
 
-		val := stmnt.(*ast.VarStatement).Value
+		val := stmnt.(*ast.ConstStatement).Value
 		if !testLiteralExpression(t, val, tt.expectedValue) {
 			return
 		}
 	}
 }
 
-func testVarStatement(t *testing.T, s ast.Statement, name string) bool {
-	if s.TokenLiteral() != "var" {
-		t.Errorf("s.TokenLiteral not 'var'. got='%q'", s.TokenLiteral())
+func testConstStatement(t *testing.T, s ast.Statement, name string) bool {
+	if s.TokenLiteral() != "const" {
+		t.Errorf("s.TokenLiteral not 'const'. got='%q'", s.TokenLiteral())
 		return false
 	}
 
-	varStmnt, ok := s.(*ast.VarStatement)
+	varStmnt, ok := s.(*ast.ConstStatement)
 	if !ok {
-		t.Errorf("varStmnt not *ast.VarStatement. got=%T", s)
+		t.Errorf("varStmnt not *ast.ConstStatement. got=%T", s)
 		return false
 	}
 

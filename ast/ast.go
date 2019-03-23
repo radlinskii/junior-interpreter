@@ -49,29 +49,29 @@ func (p *Program) String() string {
 	return out.String()
 }
 
-// VarStatement is a AST node representing "var" token.
-type VarStatement struct {
+// ConstStatement is a AST node representing "const" token.
+type ConstStatement struct {
 	Token token.Token
 	Name  *Identifier
 	Value Expression
 }
 
-func (vs *VarStatement) statementNode() {}
+func (cs *ConstStatement) statementNode() {}
 
-// TokenLiteral returns the VarStatement's token.
-func (vs *VarStatement) TokenLiteral() string {
-	return vs.Token.Literal
+// TokenLiteral returns the ConstStatement's token.
+func (cs *ConstStatement) TokenLiteral() string {
+	return cs.Token.Literal
 }
 
-func (vs *VarStatement) String() string {
+func (cs *ConstStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(vs.TokenLiteral() + " ")
-	out.WriteString(vs.Name.String())
+	out.WriteString(cs.TokenLiteral() + " ")
+	out.WriteString(cs.Name.String())
 	out.WriteString(" = ")
 
-	if vs.Value != nil {
-		out.WriteString(vs.Value.String())
+	if cs.Value != nil {
+		out.WriteString(cs.Value.String())
 	}
 
 	out.WriteString(";")

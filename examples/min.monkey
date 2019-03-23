@@ -1,5 +1,5 @@
-var min = fun(arr) {
-    var findMin = fun(arr, min) {
+const min = fun(arr) {
+    const findMin = fun(arr, min) {
         if (len(arr) == 0) {
             return min;
         }

@@ -187,7 +187,7 @@ func TestReturnStatements(t *testing.T) {
 	}{
 		{
 			`
-			var a = fun(x) {
+			const a = fun(x) {
 				if (x <= 10) {
 					return x;
 				}
@@ -199,7 +199,7 @@ func TestReturnStatements(t *testing.T) {
 		},
 		{
 			`
-			var a = fun(x) {
+			const a = fun(x) {
 				return x*5;
 			};
 
@@ -208,7 +208,7 @@ func TestReturnStatements(t *testing.T) {
 		},
 		{
 			`
-			var a = fun(x) {
+			const a = fun(x) {
 				return 10;
 				return 5;
 			};
@@ -241,19 +241,19 @@ func TestErrorHandling(t *testing.T) {
 		{`{fun(x) { return x +1; }: "Monkey"}[fun(x) { return x +1; }];`, "FUNCTION can't be used as hash key"},
 		{`{"key": "Monkey"}[fun(x) { return x +1; }];`, "index operator not supported: HASH[FUNCTION]"},
 		{`
-			var a = 5;
+			const a = 5;
 			return a;`,
 			"return statement not perrmitted outside function body",
 		},
 		{`
-			var a = 5;
+			const a = 5;
 			if (a < 10) {
 				return a;
 			}`,
 			"return statement not perrmitted outside function body",
 		},
 		{`
-			var a = fun(x) {
+			const a = fun(x) {
 				if (x < 10) {
 					return "dupa";
 				}
@@ -264,7 +264,7 @@ func TestErrorHandling(t *testing.T) {
 			"return statement not perrmitted outside function body",
 		},
 		{`
-			var a = fun(x) {
+			const a = fun(x) {
 				if (x < 10) {
 					return "duupa";
 				}
@@ -274,11 +274,43 @@ func TestErrorHandling(t *testing.T) {
 			a(20);`,
 			"missing return at the end of function body",
 		},
+		{`
+			if (1 < 2) {
+				const foobar = "baaaz";
+			}
+
+			print(foobar);`,
+			"unknown identifier: foobar"},
+		{`
+			const foobar = "foo";
+			if (1 < 2) {
+				const foobar = "bar";
+			}
+
+			const foobar = "baz";`,
+			`redeclared constant: "foobar" in one block`},
+		{`
+			const foobar = "foo";
+			if (1 < 2) {
+				const fizz = "bar";
+				const fizz = "baz";
+			}
+
+			print(foobar);`,
+			`redeclared constant: "fizz" in one block`},
+		{`
+			const someFunc = fun(x) {
+				const x = "oh no!";
+
+				return;
+			};
+
+			print(someFunc("oh yes"));`,
+			`redeclared constant: "x" in one block`},
 	}
 
 	for _, tt := range tests {
 		if !testErrorObject(t, testEval(t, tt.input), tt.expectedMsg) {
-			t.Errorf(tt.input)
 			return
 		}
 	}
@@ -299,15 +331,15 @@ func testErrorObject(t *testing.T, obj object.Object, expectedMessage string) bo
 	return true
 }
 
-func TestVarStatements(t *testing.T) {
+func TestConstStatements(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
 	}{
-		{"var a = 5; a;", 5},
-		{"var a = 5 * 5; a;", 25},
-		{"var a = 5; var b = a; b;", 5},
-		{"var a = 5; var b = a; var c = a + b + 5; c + 5;", 20},
+		{"const a = 5; a;", 5},
+		{"const a = 5 * 5; a;", 25},
+		{"const a = 5; const b = a; b;", 5},
+		{"const a = 5; const b = a; const c = a + b + 5; c + 5;", 20},
 	}
 
 	for _, tt := range tests {
@@ -347,11 +379,11 @@ func TestFunctions(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"var identity = fun(x) { return x; }; identity(5);", 5},
-		{"var identity = fun(x) { return x; }; identity(5);", 5},
-		{"var double = fun(x) { return x * 2; }; double(5);", 10},
-		{"var add = fun(x, y) { return x + y; }; add(5, 10);", 15},
-		{"var add = fun(x, y) { return x + y; }; add(5, add(6, 4));", 15},
+		{"const identity = fun(x) { return x; }; identity(5);", 5},
+		{"const identity = fun(x) { return x; }; identity(5);", 5},
+		{"const double = fun(x) { return x * 2; }; double(5);", 10},
+		{"const add = fun(x, y) { return x + y; }; add(5, 10);", 15},
+		{"const add = fun(x, y) { return x + y; }; add(5, add(6, 4));", 15},
 		{"fun(x) { return x; }(99);", 99},
 	}
 
@@ -364,13 +396,13 @@ func TestFunctions(t *testing.T) {
 
 func TestClosures(t *testing.T) {
 	input := `
-		var newAdder = fun(x) {
+		const newAdder = fun(x) {
 			return fun(y) {
 				return x + y;
 			};
 		};
 
-		var addFive = newAdder(5);
+		const addFive = newAdder(5);
 		addFive(5);
 	`
 	expected := 10
@@ -547,10 +579,10 @@ func TestArrayIndexExpressions(t *testing.T) {
 		{"[1,2,3][0];", 1},
 		{"[1,2,3][1];", 2},
 		{"[1,2,3][2];", 3},
-		{"var i = 0; [1][i];", 1},
+		{"const i = 0; [1][i];", 1},
 		{"[1,2,3][1 + 1];", 3},
-		{"var myArray = [1, 2, 3]; myArray[0];", 1},
-		{"var myArray = [1, 2, 3]; myArray[0] + myArray[2];", 4},
+		{"const myArray = [1, 2, 3]; myArray[0];", 1},
+		{"const myArray = [1, 2, 3]; myArray[0] + myArray[2];", 4},
 		{"[1, 2, 3][-1];", "index out of boundaries"},
 		{"[1, 2, 3][3];", "index out of boundaries"},
 		{"[1, 2, 3][true];", "index operator not supported: ARRAY[BOOLEAN]"},
@@ -570,7 +602,7 @@ func TestArrayIndexExpressions(t *testing.T) {
 
 func TestHashLiterals(t *testing.T) {
 	input := `
-	var two = "two";
+	const two = "two";
 	{
 		"one": 10 - 9,
 		two: 1 + 1,
@@ -616,7 +648,7 @@ func TestHashIndexExpressions(t *testing.T) {
 	}{
 		{`{"foo": 1}["foo"];`, 1},
 		{`{"foo": 5}["bar"];`, "No hash pair in \"{foo: 5}\" with key \"bar\""},
-		{`var key = "foo"; {"foo": 5}[key];`, 5},
+		{`const key = "foo"; {"foo": 5}[key];`, 5},
 		{`{}["foo"];`, "No hash pair in \"{}\" with key \"foo\""},
 		{`{5: 10}[5];`, 10},
 		{`{true: 5}[true];`, 5},
@@ -636,8 +668,8 @@ func TestHashIndexExpressions(t *testing.T) {
 
 func TestVoidFunction(t *testing.T) {
 	input := `
-	var foo = fun(x) {
-		var b  = x + 2;
+	const foo = fun(x) {
+		const b  = x + 2;
 
 		print(b);
 
@@ -651,4 +683,49 @@ func TestVoidFunction(t *testing.T) {
 	if evaluated != VOID {
 		t.Errorf("object is not NULL. got=%T", evaluated)
 	}
+}
+
+func TestBlockScope(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`
+		const a = 10;
+		if (1 < 10) {
+			const a = 5;
+		} else {
+			const a = 15;
+		}
+
+		a;
+		`, 10},
+		{`
+		const a = 10;
+		const foo = fun(x) {
+			const a = x + x;
+			return;
+		};
+
+		foo(a);
+		a;
+		`, 10},
+		{`
+		const a = 10;
+		const foo = fun(x) {
+			const a = x / 2;
+
+			return a;
+		};
+
+		foo(a);
+		`, 5},
+	}
+
+	for _, tt := range tests {
+		if !testIntegerObject(t, testEval(t, tt.input), tt.expected) {
+			return
+		}
+	}
+
 }

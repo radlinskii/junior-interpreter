@@ -32,12 +32,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalIfStatement(node, env)
 	case *ast.ReturnStatement:
 		return evalReturnStatement(node, env)
-	case *ast.VarStatement:
-		val := Eval(node.Value, env)
-		if isError(val) {
-			return val
-		}
-		return env.Set(node.Name.Value, val)
+	case *ast.ConstStatement:
+		return evalConstStatement(node, env)
 	//Expressions
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -120,8 +116,10 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
 
+	blockEnv := object.NewEnclosedEnvironment(env)
+
 	for _, stmnt := range block.Statements {
-		result = Eval(stmnt, env)
+		result = Eval(stmnt, blockEnv)
 
 		if result != nil {
 			rt := result.Type()
@@ -362,6 +360,19 @@ func evalReturnStatement(rs *ast.ReturnStatement, env *object.Environment) objec
 		return val
 	}
 	return &object.Return{Value: val}
+}
+
+func evalConstStatement(cs *ast.ConstStatement, env *object.Environment) object.Object {
+	if _, ok := env.ShallowGet(cs.Name.Value); ok {
+		return newError("redeclared constant: %q in one block", cs.Name.Value)
+	}
+
+	val := Eval(cs.Value, env)
+	if isError(val) {
+		return val
+	}
+
+	return env.Set(cs.Name.Value, val)
 }
 
 func applyFunction(fun object.Object, args []object.Object) object.Object {

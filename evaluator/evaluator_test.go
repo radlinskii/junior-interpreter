@@ -241,14 +241,14 @@ func TestErrorHandling(t *testing.T) {
 		{`
 			const a = 5;
 			return a;`,
-			"return statement not perrmitted outside function body",
+			"return statement not permitted outside function body",
 		},
 		{`
 			const a = 5;
 			if (a < 10) {
 				return a;
 			}`,
-			"return statement not perrmitted outside function body",
+			"return statement not permitted outside function body",
 		},
 		{`
 			const a = fun(x) {
@@ -259,7 +259,7 @@ func TestErrorHandling(t *testing.T) {
 			};
 
 			return a(3);`,
-			"return statement not perrmitted outside function body",
+			"return statement not permitted outside function body",
 		},
 		{`
 			const a = fun(x) {

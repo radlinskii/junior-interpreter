@@ -167,7 +167,7 @@ func (p *Parser) parseIdentifier() ast.Expression {
 	if p.peekTokenIs(token.ASSIGN) {
 		msg := fmt.Sprintf("cannot reassign constant: %q at line: %d", p.curToken.Literal, p.curToken.LineNumber)
 		p.errors = append(p.errors, msg)
-		p.nextToken() // TODO review pls
+		p.nextToken()
 	}
 
 	return ident

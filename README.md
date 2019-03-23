@@ -19,4 +19,4 @@ Code of interpreter for functional programming language based on the [writing an
 - [x] return statement can be empty if we don't want to return anything
 - [x] forbid reassigning constant
 - [x] forbid redeclaring constant in one block
-- [ ] ?? merge TRUE and FALSE tokens into one BOOLEAN token with different value
+- [x] merge TRUE and FALSE tokens into one BOOLEAN token with different value

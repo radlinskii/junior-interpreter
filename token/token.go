@@ -22,10 +22,8 @@ const (
 	INT = "INT"
 	// STRING - string literal
 	STRING = "STRING"
-	// TRUE keyword "true"
-	TRUE = "TRUE" // TODO merge into BOOLEAN ??
-	// FALSE keyword "false"
-	FALSE = "FALSE"
+	// BOOLEAN - boolean literal
+	BOOLEAN = "BOOLEAN"
 
 	// ASSIGN - assign operator
 	ASSIGN = "="
@@ -89,8 +87,8 @@ var keywords = map[string]Type{
 	"fun":    FUNCTION,
 	"const":  CONST,
 	"return": RETURN,
-	"true":   TRUE,
-	"false":  FALSE,
+	"true":   BOOLEAN,
+	"false":  BOOLEAN,
 	"if":     IF,
 	"else":   ELSE,
 }

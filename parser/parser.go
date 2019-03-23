@@ -140,7 +140,12 @@ func (p *Parser) ParseProgram() *ast.Program {
 // checkIfIllegal kills the parser if illegal character was found.
 func (p *Parser) checkIfIllegal() {
 	if p.curToken.Type == token.ILLEGAL {
-		fmt.Printf("FATAL ERROR: illegal character: %q at line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
+		if p.curToken.Literal == "\x00" {
+			fmt.Printf("FATAL ERROR: comment not terminated at line: %d\n\n", p.curToken.LineNumber)
+		} else {
+			fmt.Printf("FATAL ERROR: illegal character: %q at line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
+		}
+
 		os.Exit(1)
 	}
 }

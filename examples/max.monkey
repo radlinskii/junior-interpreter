@@ -1,6 +1,3 @@
-/*
-aaaa
-*/
 const chooseBigger = fun(x,y) {
     print("choosing bigger betweeen", x, "and", y);
 
@@ -18,15 +15,10 @@ const max = fun(arr) {
         }
 
         return findMax(rest(arr), chooseBigger(first(arr), max));
-    };/*
-aaaa
-*/
+    };
 
     return findMax(arr, -99999999);
 };
 
 
 print(max([1,2,43,5,21,121]));
-/*
-
-dupa

@@ -26,7 +26,7 @@ func testEval(t *testing.T, input string) object.Object {
 
 	env := object.NewEnvironment()
 
-	return Eval(program, env)
+	return evalProgram(program, env)
 }
 
 func TestEvalIntegerExpression(t *testing.T) {

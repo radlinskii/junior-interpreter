@@ -5,4 +5,5 @@ const factorial = fun(x) {
     return factorial(x - 1) * x;
 };
 
-print(factorial(2));
+
+factorial(2);

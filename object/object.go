@@ -139,7 +139,7 @@ type Error struct {
 
 // Inspect returns error message.
 func (e *Error) Inspect() string {
-	return "ERROR: " + e.Message
+	return "\nERROR: " + e.Message + "\n"
 }
 
 // Type returns the Error object type.

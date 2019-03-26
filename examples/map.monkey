@@ -13,4 +13,5 @@ const map = fun(arr, fn) {
 const a = [1,2,3,4,5];
 const triple = fun(x) { return x*3; };
 
-print(map(a, triple));
+
+map(a, triple);

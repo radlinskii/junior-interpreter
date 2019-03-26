@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/radlinskii/interpreter/ast"
@@ -18,16 +19,16 @@ var (
 	VOID = &object.Void{}
 )
 
-// Eval evaluates the program
-func Eval(node ast.Node, env *object.Environment) object.Object {
+var programOutput bytes.Buffer
+
+// eval evaluates the AST
+func eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	// Statements
-	case *ast.Program:
-		return evalProgram(node, env)
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
 	case *ast.ExpressionStatement:
-		return Eval(node.Expression, env)
+		return eval(node.Expression, env)
 	case *ast.IfStatement:
 		return evalIfStatement(node, env)
 	case *ast.ReturnStatement:
@@ -42,17 +43,17 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
 	case *ast.PrefixExpression:
-		right := Eval(node.Right, env)
+		right := eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
-		left := Eval(node.Left, env)
+		left := eval(node.Left, env)
 		if isError(left) {
 			return left
 		}
-		right := Eval(node.Right, env)
+		right := eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
@@ -64,7 +65,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		body := node.Body
 		return &object.Function{Parameters: params, Env: env, Body: body}
 	case *ast.CallExpression:
-		fun := Eval(node.Function, env)
+		fun := eval(node.Function, env)
 		if isError(fun) {
 			return fun
 		}
@@ -80,11 +81,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return &object.Array{Elements: elements}
 	case *ast.IndexExpression:
-		left := Eval(node.Left, env)
+		left := eval(node.Left, env)
 		if isError(left) {
 			return left
 		}
-		right := Eval(node.Right, env)
+		right := eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
@@ -96,11 +97,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	}
 }
 
+// EvalProgram starts evaluation of the AST.
 func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	var result object.Object
 
 	for _, stmnt := range program.Statements {
-		result = Eval(stmnt, env)
+		result = eval(stmnt, env)
 
 		switch result := result.(type) {
 		case *object.Return:
@@ -113,13 +115,25 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	return result
 }
 
+// EvalProgram starts evaluation of the AST.
+func EvalProgram(program *ast.Program, env *object.Environment) string {
+	evaluated := evalProgram(program, env)
+
+	programOutput.WriteString(evaluated.Inspect())
+
+	retStr := programOutput.String()
+	programOutput.Reset()
+
+	return retStr
+}
+
 func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
 
 	blockEnv := object.NewEnclosedEnvironment(env)
 
 	for _, stmnt := range block.Statements {
-		result = Eval(stmnt, blockEnv)
+		result = eval(stmnt, blockEnv)
 
 		if result != nil {
 			rt := result.Type()
@@ -232,7 +246,7 @@ func evalBoolToBooleanObjectReference(val bool) object.Object {
 }
 
 func evalIfStatement(ie *ast.IfStatement, env *object.Environment) object.Object {
-	condition := Eval(ie.Condition, env)
+	condition := eval(ie.Condition, env)
 	if isError(condition) {
 		return condition
 	}
@@ -243,9 +257,9 @@ func evalIfStatement(ie *ast.IfStatement, env *object.Environment) object.Object
 	}
 
 	if isConditionTrue {
-		return Eval(ie.Consequence, env)
+		return eval(ie.Consequence, env)
 	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative, env)
+		return eval(ie.Alternative, env)
 	}
 
 	return NULL
@@ -322,7 +336,7 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Obje
 	pairs := make(map[object.HashKey]object.HashPair)
 
 	for keyNode, valueNode := range node.Pairs {
-		key := Eval(keyNode, env)
+		key := eval(keyNode, env)
 		if isError(key) {
 			return key
 		}
@@ -332,7 +346,7 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Obje
 			return newError("%s can't be used as hash key", key.Type())
 		}
 
-		value := Eval(valueNode, env)
+		value := eval(valueNode, env)
 		if isError(value) {
 			return value
 		}
@@ -348,7 +362,7 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 	var result []object.Object
 
 	for _, e := range exps {
-		evaluated := Eval(e, env)
+		evaluated := eval(e, env)
 		if isError(evaluated) {
 			return []object.Object{evaluated}
 		}
@@ -362,7 +376,7 @@ func evalReturnStatement(rs *ast.ReturnStatement, env *object.Environment) objec
 	if rs.ReturnValue == nil {
 		return VOID
 	}
-	val := Eval(rs.ReturnValue, env)
+	val := eval(rs.ReturnValue, env)
 	if isError(val) {
 		return val
 	}
@@ -374,7 +388,7 @@ func evalConstStatement(cs *ast.ConstStatement, env *object.Environment) object.
 		return newError("redeclared constant: %q in one block", cs.Name.Value)
 	}
 
-	val := Eval(cs.Value, env)
+	val := eval(cs.Value, env)
 	if isError(val) {
 		return val
 	}
@@ -404,7 +418,7 @@ func evalFunctionBody(body *ast.BlockStatement, env *object.Environment) object.
 	var result object.Object
 
 	for _, stmnt := range body.Statements {
-		result = Eval(stmnt, env)
+		result = eval(stmnt, env)
 
 		if result != nil {
 			rt := result.Type()

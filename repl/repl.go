@@ -36,12 +36,8 @@ func Start(in io.Reader, out io.Writer) {
 		program := p.ParseProgram()
 
 		if len(p.Errors()) == 0 {
-			evaluated := evaluator.Eval(program, env)
-
-			if evaluated != nil {
-				io.WriteString(out, evaluated.Inspect())
-				io.WriteString(out, "\n")
-			}
+			evaluated := evaluator.EvalProgram(program, env)
+			fmt.Println(evaluated)
 		}
 
 	}

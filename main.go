@@ -33,11 +33,7 @@ func main() {
 	if len(p.Errors()) == 0 {
 		env := object.NewEnvironment()
 
-		evaluated := evaluator.Eval(program, env)
-		if evaluated != nil {
-			if evaluated.Type() == object.ERROR {
-				fmt.Println(evaluated.Inspect())
-			}
-		}
+		evaluated := evaluator.EvalProgram(program, env)
+		fmt.Println(evaluated)
 	}
 }

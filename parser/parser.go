@@ -143,16 +143,10 @@ func (p *Parser) checkIfIllegal() {
 		var errMsg string
 		if p.curToken.Literal == "\x00" {
 			errMsg = fmt.Sprintf("FATAL ERROR: comment not terminated at line: %d\n\n", p.curToken.LineNumber)
-
 		} else {
 			errMsg = fmt.Sprintf("FATAL ERROR: illegal character: %q at line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
 		}
-		defer func() {
-			if err := recover(); err != nil {
-				p.errors = append(p.errors, errMsg)
-			}
-		}()
-		panic(errMsg)
+		p.errors = append(p.errors, errMsg)
 	}
 }
 

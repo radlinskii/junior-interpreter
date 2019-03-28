@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"os"
 	"strconv"
+	"strings"
 
 	"github.com/radlinskii/interpreter/ast"
 	"github.com/radlinskii/interpreter/lexer"
@@ -140,19 +140,29 @@ func (p *Parser) ParseProgram() *ast.Program {
 // checkIfIllegal kills the parser if illegal character was found.
 func (p *Parser) checkIfIllegal() {
 	if p.curToken.Type == token.ILLEGAL {
+		var errMsg string
 		if p.curToken.Literal == "\x00" {
-			fmt.Printf("FATAL ERROR: comment not terminated at line: %d\n\n", p.curToken.LineNumber)
-		} else {
-			fmt.Printf("FATAL ERROR: illegal character: %q at line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
-		}
+			errMsg = fmt.Sprintf("FATAL ERROR: comment not terminated at line: %d\n\n", p.curToken.LineNumber)
 
-		os.Exit(1)
+		} else {
+			errMsg = fmt.Sprintf("FATAL ERROR: illegal character: %q at line: %d\n\n", p.curToken.Literal, p.curToken.LineNumber)
+		}
+		defer func() {
+			if err := recover(); err != nil {
+				p.errors = append(p.errors, errMsg)
+			}
+		}()
+		panic(errMsg)
 	}
 }
 
 func (p *Parser) printErrors() {
 	if len(p.errors) != 0 {
 		for _, msg := range p.Errors() {
+			if strings.HasPrefix(msg, "FATAL") {
+				fmt.Println(msg)
+				break
+			}
 			fmt.Println("ERROR: " + msg)
 		}
 		fmt.Println("")

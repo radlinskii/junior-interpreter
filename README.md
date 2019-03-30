@@ -94,6 +94,61 @@ IIFE
 2. **Syntax errors**, e.g. *missing semicolon*, are collected through parsing and printed after parsing process is finished. They prevent program from being evaluated.
 3. Any **Semantic error**, e.g. *type incompatibility*, or **Evaluation errors**, e.g. *index out of boundaries*, stops evaluation of the program.
 
+### Grammar
+
+#### Keywords
+
+Reserved keywords of Junior:
+
+`const, fun, return, if, else, true, false`
+
+Reserved names of built-in functions:
+
+`print, last, first, rest, len, push`
+
+
+#### Comments
+
+Junior supports well known single and multi line comments.
+
+```javascript
+// This is a single line comment.
+```
+
+```javascript
+/*
+This is a
+multi line comment.
+ */
+```
+
+> Note: not terminated multi line comment will cause a parsing error.
+
+#### Literals 
+
+Booleans
+```javascript
+true;
+false;
+```
+
+Integers
+```javascript
+1234;
+```
+
+##### Strings
+
+strings are defined inside double-quotes.
+As for now escaping double-quotes is not supported. But you don't need to escape 
+```javascript
+"The quick brown fox jumps over the lazy dog";
+```
+
+Arrays
+
+
+
 ## Installation and development
 
 1. `clone` the *repository*

@@ -12,13 +12,13 @@ It's an interpreter written in Golang for programming language of our creation.<
 It's a project for *Theory of Compilation* classes at the *AGH* university.<br />
 It's based on [writing an interpreter in go](https://interpreterbook.com/) book.
 
-You can use and test it in action [here](https://junior-interpreter-online.herokuapp.com/).
+You can test it in action [here](https://junior-interpreter-online.herokuapp.com/).
 
 ## How it Works
 
 It divides interpreting the Junior's code into 3 parts.
 
-1. Lexer - performing lexical analysis 
+1. Lexer - performing lexical analysis
 2. Parser - syntax analysis and building Abstract Syntax Tree.
 3. Evaluator - traversing AST and evaluating the program.
 
@@ -31,9 +31,11 @@ It divides interpreting the Junior's code into 3 parts.
 ## Junior Language Specification
 
 Junior is an imperative programming language. It derive from functional programming paradigm.
-It's loosely typed but uses immutability. It has features like closures and IIFEs. It's based on [Monkey programming language](https://interpreterbook.com/#the-monkey-programming-language).
+It's loosely typed but uses immutability. It has features like closures and IIFEs.
+It's based on [Monkey programming language](https://interpreterbook.com/#the-monkey-programming-language).
 
 Example program:
+
 ```javascript
 const makeConcat = fun(y) {
     return fun(x) {
@@ -76,7 +78,6 @@ things you can't assign to a constant:
 
 3. return "bar";
 
-
 ### Builtins
 
 first,last etc.
@@ -106,6 +107,85 @@ Reserved names of built-in functions:
 
 `print, last, first, rest, len, push`
 
+#### Builtins
+
+Junior have some predefined functions that you can use.
+
+1. `print` - prints given arguments to the output. returns null.
+2. `len` - returns length of argument (array/string).
+3. `first` - returns first element of an array.
+4. `last` - returns last element of an array.
+5. `rest` - returns all the elements of an array but the first one.
+6. `push` - returns copy of given array with provided argument as the last element.
+
+#### Literals
+
+##### Booleans
+
+Booleans are pretty straight forward.
+Their values can only be either true or false.
+
+```javascript
+const truth = true;
+const fact = truth != false; // true
+```
+
+##### Integers
+
+Integers are as for now the only numeric values in Junior.
+You can make every primitive mathematical operations on them.
+
+```javascript
+const number = 12;
+const otherNumber = 34;
+
+const sum = number + otherNumber; // 46
+```
+
+##### Strings
+
+Strings are defined inside double-quotes.
+As for now escaping double-quotes is not supported. But you don't need to escape e.g new lines.
+
+```javascript
+"The quick brown fox jumps over the lazy dog";
+```
+
+##### Functions
+
+Functions in Junior are also treated as literals.
+You can assign them to variables, store them in arrays or objects, pass them as arguments to other functions or immedietalt invoke them.
+
+```javascript
+const square = fun(x) {
+    return x * x;
+};
+
+square(4); // 16
+```
+
+##### Arrays
+
+Arrays in Junior are as immutable as any other literals.
+They are not bound to one type but can store values of different types.
+Arrays are indexed starting from 0.
+
+```javascript
+const arr = [true, 2, "three", fun(x) { return x * x; }];
+
+arr[3](6); // 36
+```
+
+##### Hashes
+
+Hashes are similar to Javascript's objects. Check them out:
+
+```javascript
+const obj = { name: "John Doe", age: "22", greet: fun(name) { return "Hi " + name + "! I'm John Doe"; } };
+
+print(obj[name]); // John Doe
+print(obj[greet]("Jane")); // Hi Jane! I'm John Doe 
+```
 
 #### Comments
 
@@ -123,31 +203,6 @@ multi line comment.
 ```
 
 > Note: not terminated multi line comment will cause a parsing error.
-
-#### Literals 
-
-Booleans
-```javascript
-true;
-false;
-```
-
-Integers
-```javascript
-1234;
-```
-
-##### Strings
-
-strings are defined inside double-quotes.
-As for now escaping double-quotes is not supported. But you don't need to escape 
-```javascript
-"The quick brown fox jumps over the lazy dog";
-```
-
-Arrays
-
-
 
 ## Installation and development
 

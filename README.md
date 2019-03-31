@@ -50,51 +50,6 @@ addWorld("Hello"); // Hello World!
 
 You can find more examples in the `examples` directory.
 
-# TODO*
-
-### Types
-
-int. string, etc. functions ??? you can assign them to a variable so probably...
-arrays, hashes...
-
-### Expressions
-
-things you can bind to a variable
-literals : "aa";
-expressions: 1 + 3
-function calls: const a = first([1,3,5]);
-
-functions can do it!
-
-### Statements
-
-things you can't assign to a constant:
-
-1. const foo = "bar";
-
-2. if (true) {
-    print("foo");
-}
-
-3. return "bar";
-
-### Builtins
-
-first,last etc.
-
-### features
-
-closure
-IIFE
-
-# END OF TODO*
-
-### Error handling
-
-1. Every **Lexical error**, e.g. *invalid token*, stops program parsing.
-2. **Syntax errors**, e.g. *missing semicolon*, are collected through parsing and printed after parsing process is finished. They prevent program from being evaluated.
-3. Any **Semantic error**, e.g. *type incompatibility*, or **Evaluation errors**, e.g. *index out of boundaries*, stops evaluation of the program.
-
 ### Grammar
 
 #### Keywords
@@ -107,20 +62,73 @@ Reserved names of built-in functions:
 
 `print, last, first, rest, len, push`
 
-#### Builtins
+#### Statements
 
-Junior have some predefined functions that you can use.
+Statements are instructions that Junior's program is contained of.
+In Junior statements are separated with semicolons.
 
-1. `print` - prints given arguments to the output. returns null.
-2. `len` - returns length of argument (array/string).
-3. `first` - returns first element of an array.
-4. `last` - returns last element of an array.
-5. `rest` - returns all the elements of an array but the first one.
-6. `push` - returns copy of given array with provided argument as the last element.
+##### Const statement
 
-#### Literals
+`const` `identifier` `=` `expression` `;`
 
-##### Booleans
+Const statement binds value evaluated from `expression` to variable `identifier` points to.
+Junior uses block scoping, there are three different kinds of scopes.
+1. global scope
+2. function scope
+3. if/else scope
+
+If variable is not found in the current scope the ancestor's scope is looked up, if interpreter fails to find given identifier even in the global scope a semantic error is evaluated.
+You cannot redeclare a variable that `identifier` represents in one scope.
+
+##### Return statement
+
+`return` `expression` `;` or `return` `;`
+
+There two rules when it comes to return statements in Junior:
+
+1. Return statements are forbidden outside function body.
+2. Return statements are mandatory inside function body.
+
+> Note that you can omit a expression in return statement if you want your function to return `null`.
+
+##### If statement
+
+`if` `(` `condition` `)` `{` `consequence` `}`
+
+or
+
+`if` `(` `condition` `)` `{` `consequence` `}` `else` `{` `alternative` `}`
+
+If statement evaluates statements in the *consequence* block if the *condition* was true.
+If *condition* was false and *alternative* block is present it will get evaluated instead.
+
+> Note in Junior `condition` must evaluate to a boolean, therefore this code:
+` if (1) { print("1"); }` is not valid.
+
+##### Expression Statement
+
+In Junior every *expression* is also a *statement* therefore interpreter evaluates necessary expressions like e.g. function calls.
+
+```javascript
+1+1;
+"Hello" + " World!";
+print("Hello World!");
+myAdder(40, 2);
+```
+
+> Note the above expressions are valid statements in Junior, but the first two don't make much sense outside the REPL, though.
+
+#### Expressions
+
+In Junior the only listed above: `const`, `return` and `if` statements are not interpreted as expressions.
+Every operation and every literal is a valid expression and gets evaluated when interpreter is running.
+
+##### Literals
+
+In Junior every *literal* is an expression.
+Only Booleans, Integers and Strings are "primitive" types that can be compared or treated as keys inside Hashes.
+
+###### Booleans
 
 Booleans are pretty straight forward.
 Their values can only be either true or false.
@@ -130,7 +138,7 @@ const truth = true;
 const fact = truth != false; // true
 ```
 
-##### Integers
+###### Integers
 
 Integers are as for now the only numeric values in Junior.
 You can make every primitive mathematical operations on them.
@@ -142,7 +150,7 @@ const otherNumber = 34;
 const sum = number + otherNumber; // 46
 ```
 
-##### Strings
+###### Strings
 
 Strings are defined inside double-quotes.
 As for now escaping double-quotes is not supported. But you don't need to escape e.g new lines.
@@ -151,20 +159,36 @@ As for now escaping double-quotes is not supported. But you don't need to escape
 "The quick brown fox jumps over the lazy dog";
 ```
 
-##### Functions
+###### Functions
 
-Functions in Junior are also treated as literals.
-You can assign them to variables, store them in arrays or objects, pass them as arguments to other functions or immedietalt invoke them.
+`fun` `(` `identifiers...` `)` `{` `statements...` `}`
+
+Functions in Junior are also treated as literals. 
+You can assign them to variables, store them in arrays or objects, pass them as arguments to other functions or immediately invoke them.
+While evaluating function body, interpreter must encounter a return statement.
+If your function is supposed to not return anything you can omit value in return statement.
+
 
 ```javascript
 const square = fun(x) {
     return x * x;
 };
 
-square(4); // 16
+square(4); // returns 16
+
+
+const printSquare = fun(x) {
+    print(x * x);
+    
+    return;
+};
+
+printSquare(4); // prints 16, returns null.
 ```
 
-##### Arrays
+###### Arrays
+
+`[` `expressions...` `]`
 
 Arrays in Junior are as immutable as any other literals.
 They are not bound to one type but can store values of different types.
@@ -176,16 +200,139 @@ const arr = [true, 2, "three", fun(x) { return x * x; }];
 arr[3](6); // 36
 ```
 
-##### Hashes
+###### Hashes
 
-Hashes are similar to Javascript's objects. Check them out:
+`{` `primitive type literal` `:` `expression` ... `}`
+
+Hashes are maps with key - value pairs.
+They are similar to Javascript's objects. Check them out:
 
 ```javascript
-const obj = { name: "John Doe", age: "22", greet: fun(name) { return "Hi " + name + "! I'm John Doe"; } };
+const obj = { "name": "John Doe", 4: "Been there.", "greet": fun(name) { return "Hi " + name + "! I'm John Doe"; } };
 
-print(obj[name]); // John Doe
-print(obj[greet]("Jane")); // Hi Jane! I'm John Doe 
+const greetStr = "greet";
+
+print(obj[4]); // Been there.
+print(obj[greetStr]("Jane")); // Hi Jane! I'm John Doe 
 ```
+
+##### Operations
+
+Junior supports many operations, from adding to numbers to retrieving value from a hash or array.
+Here is a list of Junior's operations in order of their precedence.
+
+
+###### Logical 
+
+operators: `==`, `!=`, `>=`, `<=`, `>`, `<`
+
+They evaluate and return logical value of expression they represent.
+> Note that as for now they also support primitive types (booleans, integers, strings) as their operands.
+
+###### Mathematical:
+
+operators: `+`,`-`, `*`, `/`
+
+Those operators return result of mathematical operation evaluated between their operands.
+They only support integers as their operands.
+
+```javascript
+30 + 12;
+84 / 2;
+1 * 42;
+42 - 0;
+```
+
+###### Concatenation
+
+operator: `+`
+
+Adds together two strings and returns the result.
+
+```javascript
+"Hello" + " World!";
+```
+
+###### Number Negation
+
+operator: `-`
+
+Prefixed operator for negating an integer.
+
+```javascript
+52 + -10;
+```
+
+###### Boolean Negation
+
+operator: `!`
+
+Prefixed operator for negating a boolean expression.
+
+```javascript
+const truth = true;
+!truth;
+```
+
+###### Function Call
+
+operators: `()`
+
+To call a function put parenthesis after identifier or any other expression that evaluates to a function literal and pass arguments between them.
+
+```javascript
+const myWeirdFunction = fun(x) {
+    return x + 2;
+};
+
+myWeirdFunction(40);
+
+fun() {
+    print("This is an IIFE!");
+}();
+```
+
+###### Retrieving value with Index
+
+operators: `[]`
+
+The bracket operators are used to retrieve values from arrays and hashes.
+They work just as in any other language.
+
+```javascript
+const myArray = [4, 2, 0];
+
+myArray[0]; // 4
+
+const theUniverse = { 42: "the answer", "isEarthFlat": false };
+
+theUniverse[42];
+theUniverse["isEarthFlat"];
+```
+
+##### Identifiers
+
+Identifiers are also treated as expressions.
+They evaluate to expression they are bind to.
+You can't redeclare a variable inside it's scope but you can overwrite, a identifier that was declared inside scope of one of ancestors of current scope.
+```javascript
+const randomNumber = 40;
+const two = 2;
+
+randomNumber + two;
+```
+
+#### Builtins
+
+Junior have some predefined functions that you can use.
+
+1. `print(values...)` - prints given arguments to the output, returns null.
+2. `len(array|string)` - returns length of argument (array or string).
+3. `first(array)` - returns first element of an array.
+4. `last(array)` - returns last element of given array.
+5. `rest(array)` - returns all the elements of given array but the first one.
+6. `push(array|value)` - returns copy of given array with provided argument as the last element.
+
 
 #### Comments
 
@@ -203,6 +350,18 @@ multi line comment.
 ```
 
 > Note: not terminated multi line comment will cause a parsing error.
+
+
+#### Whitespaces
+
+From the interpreter's perspective *whitespaces* are meaningless, but you should always focus on your code's readability.
+
+
+### Error handling
+
+1. Every **Lexical error**, e.g. *invalid token*, stops program parsing.
+2. **Syntax errors**, e.g. *missing semicolon*, are collected through parsing and printed after parsing process is finished. They prevent program from being evaluated.
+3. Any **Semantic error**, e.g. *type incompatibility*, or **Evaluation errors**, e.g. *index out of boundaries*, stops evaluation of the program.
 
 ## Installation and development
 

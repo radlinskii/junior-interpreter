@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.com/radlinskii/interpreter.svg?branch=master)](https://travis-ci.com/radlinskii/interpreter)
 [![Go Report Card](https://goreportcard.com/badge/github.com/radlinskii/interpreter)](https://goreportcard.com/report/github.com/radlinskii/interpreter)
 
-Interpreter for programming language we named **Junior**.
+Interpreter for programming language named **Junior**.
 
 ## What is it
 
@@ -30,22 +30,21 @@ It divides interpreting the Junior's code into 3 parts.
 
 ## Junior Language Specification
 
-Junior is an imperative programming language. It derive from functional programming paradigm.
+Junior is an imperative programming language. It derives from functional programming paradigm.
 It's loosely typed but uses immutability. It has features like closures and IIFEs.
 It's based on [Monkey programming language](https://interpreterbook.com/#the-monkey-programming-language).
 
 Example program:
 
 ```javascript
-const makeConcat = fun(y) {
-    return fun(x) {
-        return x + y;
-    };
+const factorial = fun(x) {
+    if (x < 1) {
+        return 1;
+    }
+    return factorial(x - 1) * x;
 };
 
-const addWorld = makeConcat(" World!");
-
-addWorld("Hello"); // Hello World!
+factorial(5); // 120
 ```
 
 You can find more examples in the `examples` directory.
@@ -64,32 +63,32 @@ Reserved names of built-in functions:
 
 #### Statements
 
-Statements are instructions that Junior's program is contained of.
+Junior program consists of instructions which are called statements.
 In Junior statements are separated with semicolons.
 
 ##### Const statement
 
 `const` `identifier` `=` `expression` `;`
 
-Const statement binds value evaluated from `expression` to variable `identifier` points to.
+Const statement binds the value evaluated from `expression` to a variable `identifier`.
 Junior uses block scoping, there are three different kinds of scopes.
 1. global scope
 2. function scope
 3. if/else scope
 
-If variable is not found in the current scope the ancestor's scope is looked up, if interpreter fails to find given identifier even in the global scope a semantic error is evaluated.
+If variable is not found in the current scope the ancestor's scope is examined, if interpreter fails to find given identifier even in the global scope a semantic error is evaluated.
 You cannot redeclare a variable that `identifier` represents in one scope.
 
 ##### Return statement
 
 `return` `expression` `;` or `return` `;`
 
-There two rules when it comes to return statements in Junior:
+There are two rules when it comes to return statements in Junior:
 
-1. Return statements are forbidden outside function body.
-2. Return statements are mandatory inside function body.
+1. Return statements are forbidden outside a function body.
+2. Return statements are mandatory inside a function body.
 
-> Note that you can omit a expression in return statement if you want your function to return `null`.
+> Note that you can omit an expression in return statement if you want your function to return `null`.
 
 ##### If statement
 
@@ -99,7 +98,7 @@ or
 
 `if` `(` `condition` `)` `{` `consequence` `}` `else` `{` `alternative` `}`
 
-If statement evaluates statements in the *consequence* block if the *condition* was true.
+*If statement* evaluates statements in the *consequence* block if the *condition* was true.
 If *condition* was false and *alternative* block is present it will get evaluated instead.
 
 > Note in Junior `condition` must evaluate to a boolean, therefore this code:
@@ -120,8 +119,7 @@ myAdder(40, 2);
 
 #### Expressions
 
-In Junior the only listed above: `const`, `return` and `if` statements are not interpreted as expressions.
-Every operation and every literal is a valid expression and gets evaluated when interpreter is running.
+In Junior, every operation and every literal is a valid expression and gets evaluated when interpreter is running.
 
 ##### Literals
 
@@ -141,7 +139,7 @@ const fact = truth != false; // true
 ###### Integers
 
 Integers are as for now the only numeric values in Junior.
-You can make every primitive mathematical operations on them.
+You can perform every primitive mathematical operations on them.
 
 ```javascript
 const number = 12;
@@ -204,7 +202,7 @@ arr[3](6); // 36
 
 `{` `primitive type literal` `:` `expression` ... `}`
 
-Hashes are maps with key - value pairs.
+Hashes are maps with key: value pairs.
 They are similar to Javascript's objects. Check them out:
 
 ```javascript
@@ -227,7 +225,7 @@ Here is a list of Junior's operations in order of their precedence.
 operators: `==`, `!=`, `>=`, `<=`, `>`, `<`
 
 They evaluate and return logical value of expression they represent.
-> Note that as for now they also support primitive types (booleans, integers, strings) as their operands.
+> Note that as for now they only support primitive types (booleans, integers, strings) as their operands.
 
 ###### Mathematical:
 
@@ -313,8 +311,8 @@ theUniverse["isEarthFlat"];
 ##### Identifiers
 
 Identifiers are also treated as expressions.
-They evaluate to expression they are bind to.
-You can't redeclare a variable inside it's scope but you can overwrite, a identifier that was declared inside scope of one of ancestors of current scope.
+They evaluate to expression they are bound to.
+You can't redeclare a variable inside it's scope but you can overwrite, an identifier that was declared inside scope of one of an ancestors of current scope.
 ```javascript
 const randomNumber = 40;
 const two = 2;
@@ -359,7 +357,7 @@ From the interpreter's perspective *whitespaces* are meaningless, but you should
 
 ### Error handling
 
-1. Every **Lexical error**, e.g. *invalid token*, stops program parsing.
+1. Every **Lexical error**, e.g. *invalid token*, stops interpreter from parsing the program.
 2. **Syntax errors**, e.g. *missing semicolon*, are collected through parsing and printed after parsing process is finished. They prevent program from being evaluated.
 3. Any **Semantic error**, e.g. *type incompatibility*, or **Evaluation errors**, e.g. *index out of boundaries*, stops evaluation of the program.
 
@@ -372,8 +370,8 @@ From the interpreter's perspective *whitespaces* are meaningless, but you should
 
 ## Contributing
 
-Feel free to post issues.
-You are also welcome fork the repo and create PRs, but remember to create an issue and assign it to yourself first.
+Found a bug or typo? Create an issue [here](https://github.com/radlinskii/junior-interpreter/issues/new).
+You are also welcome fork this repository and create PRs, but remember to create an issue and assign it to yourself first.
 
 ## Authors
 

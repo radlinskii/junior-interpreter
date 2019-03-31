@@ -1,7 +1,7 @@
 # Junior Interpreter
 
 [![GoDoc](https://godoc.org/github.com/radlinskii/interpreter?status.svg)](https://godoc.org/github.com/radlinskii/interpreter)
-[![Build Status](https://travis-ci.com/radlinskii/interpreter.svg?branch=master)](https://travis-ci.com/radlinskii/interpreter)
+[![Build Status](https://travis-ci.com/radlinskii/junior-interpreter.svg?branch=master)](https://travis-ci.com/radlinskii/junior-interpreter)
 [![Go Report Card](https://goreportcard.com/badge/github.com/radlinskii/interpreter)](https://goreportcard.com/report/github.com/radlinskii/interpreter)
 
 Interpreter for programming language named **Junior**.
@@ -12,7 +12,7 @@ It's an interpreter written in Golang for programming language of our creation.<
 It's a project for *Theory of Compilation* classes at the *AGH* university.<br />
 It's based on [writing an interpreter in go](https://interpreterbook.com/) book.
 
-You can test it in action [here](https://junior-interpreter-online.herokuapp.com/).
+You can test it in action in our online REPL [here](https://junior-interpreter-online.herokuapp.com/).
 
 ## How it Works
 

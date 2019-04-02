@@ -156,6 +156,8 @@ As for now escaping double-quotes is not supported. But you don't need to escape
 "The quick brown fox jumps over the lazy dog";
 ```
 
+> Note: not terminating a string will cause a parsing error.
+
 ##### Functions
 
 `fun` `(` `identifiers...` `)` `{` `statements...` `}`

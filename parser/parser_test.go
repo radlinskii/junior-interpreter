@@ -732,3 +732,31 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 		testFunc(value)
 	}
 }
+
+func TestParserErrors(t *testing.T) {
+	tests := []struct {
+		input            string
+		expectedErrorMsg string
+	}{
+		{input: "$", expectedErrorMsg: "FATAL ERROR: illegal character: \"$\" at line: 1\n\n"},
+		{input: `const foo = "`, expectedErrorMsg: "FATAL ERROR: string literal not terminated at line: 1\n\n"},
+		{input: `const foo = "a string"; /* comment not terminated...`, expectedErrorMsg: "FATAL ERROR: comment not terminated at line: 1\n\n"},
+		{input: `const foo = "a string"`, expectedErrorMsg: "expected semicolon at line: 1"},
+		{input: `foo`, expectedErrorMsg: "expected semicolon at line: 1"},
+		{input: `const print = "a string";`, expectedErrorMsg: `cannot override built-in function: "print" at line: 1`},
+		{input: `const foo "string";`, expectedErrorMsg: `unexpected token: "STRING" (expected: "=") at line: 1`},
+		{input: `=`, expectedErrorMsg: `unexpected token: "=" at line: 1`},
+		{input: `const foo = "a string"; foo = 1234;`, expectedErrorMsg: `cannot reassign constant: "foo" at line: 1`},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+
+		p.ParseProgram()
+
+		if p.errors[0] != tt.expectedErrorMsg {
+			t.Errorf("wrong error message, expected: %s, got: %s", tt.expectedErrorMsg, p.errors[0])
+		}
+	}
+}

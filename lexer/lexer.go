@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"github.com/radlinskii/interpreter/token"
 )
 
@@ -74,7 +75,10 @@ func (l *Lexer) skipMultipleLineComment() token.Token {
 		}
 		l.readChar()
 	}
-	return newToken(token.ILLEGAL, l.ch, l.RowNum)
+
+	msg := fmt.Sprintf("FATAL ERROR: comment not terminated at line: %d\n\n", l.RowNum)
+
+	return token.Token{Type: token.ILLEGAL, Literal: msg, LineNumber: l.RowNum}
 }
 
 // NextToken analyzes text and returns the first token it founds.
@@ -143,9 +147,7 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case ':':
 		tok = newToken(token.COLON, l.ch, l.RowNum)
 	case '"':
-		tok.Type = token.STRING
-		tok.Literal = l.readString()
-		tok.LineNumber = l.RowNum
+		return l.readString()
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -163,7 +165,8 @@ func (l *Lexer) NextToken() (tok token.Token) {
 			tok.LineNumber = l.RowNum
 			return tok
 		} else {
-			tok = newToken(token.ILLEGAL, l.ch, l.RowNum)
+			msg := fmt.Sprintf("FATAL ERROR: illegal character: %q at line: %d\n\n", string(l.ch), l.RowNum)
+			tok = token.Token{Type: token.ILLEGAL, Literal: msg, LineNumber: l.RowNum}
 		}
 	}
 	l.readChar()
@@ -188,16 +191,20 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
-func (l *Lexer) readString() string {
+func (l *Lexer) readString() token.Token {
 	position := l.position + 1
 	for {
 		l.readChar()
 		if l.ch == '"' {
 			break
+		} else if l.ch == 0 {
+			msg := fmt.Sprintf("FATAL ERROR: string literal not terminated at line: %d\n\n", l.RowNum)
+
+			return token.Token{Type: token.ILLEGAL, Literal: msg, LineNumber: l.RowNum}
 		}
 	}
-
-	return l.input[position:l.position]
+	l.readChar()
+	return token.Token{Type: token.STRING, Literal: l.input[position : l.position-1], LineNumber: l.RowNum}
 }
 
 func isLetter(ch byte) bool {

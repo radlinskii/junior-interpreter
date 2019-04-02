@@ -3,6 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/radlinskii/interpreter?status.svg)](https://godoc.org/github.com/radlinskii/interpreter)
 [![Build Status](https://travis-ci.com/radlinskii/junior-interpreter.svg?branch=master)](https://travis-ci.com/radlinskii/junior-interpreter)
 [![Go Report Card](https://goreportcard.com/badge/github.com/radlinskii/interpreter)](https://goreportcard.com/report/github.com/radlinskii/interpreter)
+[![version](https://img.shields.io/github/release/radlinskii/junior-interpreter.svg)](https://img.shields.io/github/release/radlinskii/junior-interpreter.svg)
 
 Interpreter for programming language named **Junior**.
 

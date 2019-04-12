@@ -36,13 +36,36 @@ It's loosely typed but uses immutability. It has features like closures and IIFE
 It's based on [Monkey programming language](https://interpreterbook.com/#the-monkey-programming-language).
 
 ### Table of contents
++ [Example program](#example-program)
++ [Keywords](#keywords)
++ [Statements](#statements)
+  - [Const statement](#const-statement)
+  - [Return statement](#return-statement)
+  - [If statement](#if-statement)
+  - [Expression Statement](#expression-statement)
++ [Expressions](#expressions)
+  - [Literals](#literals)
+    * [Booleans](#booleans)
+    * [Integers](#integers)
+    * [Strings](#strings)
+    * [Functions](#functions)
+    * [Arrays](#arrays)
+    * [Hashes](#hashes)
+  - [Operations](#operations)
+    * [Logical](#logical)
+    * [Mathematical](#mathematical-)
+    * [Concatenation](#concatenation)
+    * [Number Negation](#number-negation)
+    * [Boolean Negation](#boolean-negation)
+    * [Function Call](#function-call)
+    * [Retrieving value with Index](#retrieving-value-with-index)
+  - [Identifiers](#identifiers)
++ [Builtins](#builtins)
++ [Comments](#comments)
++ [Whitespaces](#whitespaces)
++ [Error handling](#error-handling)
 
-1. [Example program](#example)
-2. [Keywords](#keywords)
-3. [Statements](#statements)
-4. [Const statement](#const-statement)
-
-### Example program:
+### Example program
 
 ```javascript
 const factorial = fun(x) {

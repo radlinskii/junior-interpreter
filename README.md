@@ -35,7 +35,37 @@ Junior is an imperative programming language. It derives from functional program
 It's loosely typed but uses immutability. It has features like closures and IIFEs.
 It's based on [Monkey programming language](https://interpreterbook.com/#the-monkey-programming-language).
 
-Example program:
+### Table of contents
++ [Example program](#example-program)
++ [Keywords](#keywords)
++ [Statements](#statements)
+  - [Const statement](#const-statement)
+  - [Return statement](#return-statement)
+  - [If statement](#if-statement)
+  - [Expression Statement](#expression-statement)
++ [Expressions](#expressions)
+  - [Literals](#literals)
+    * [Booleans](#booleans)
+    * [Integers](#integers)
+    * [Strings](#strings)
+    * [Functions](#functions)
+    * [Arrays](#arrays)
+    * [Hashes](#hashes)
+  - [Operations](#operations)
+    * [Logical](#logical)
+    * [Mathematical](#mathematical-)
+    * [Concatenation](#concatenation)
+    * [Number Negation](#number-negation)
+    * [Boolean Negation](#boolean-negation)
+    * [Function Call](#function-call)
+    * [Retrieving value with Index](#retrieving-value-with-index)
+  - [Identifiers](#identifiers)
++ [Builtins](#builtins)
++ [Comments](#comments)
++ [Whitespaces](#whitespaces)
++ [Error handling](#error-handling)
+
+### Example program
 
 ```javascript
 const factorial = fun(x) {

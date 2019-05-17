@@ -22,7 +22,7 @@
 &nbsp;&nbsp; **ConstStatement** &rarr; `const` **Identifier** `=` **Expression**`;`,  
 &nbsp;&nbsp; **ReturnStatement** &rarr; `return`&nbsp;`;` | `return` **Expression**`;`,  
 &nbsp;&nbsp; **IfStatement** &rarr; `if`&nbsp;`(`**Expression**`)`&nbsp;`{`**BlockStatement**`}` |
-`if`&nbsp;`(`**Expression**`)``{` **BlockStatement**`}`&nbsp;`else`&nbsp;`{` **BlockStatement** `}`,  
+`if`&nbsp;`(`**Expression**`)``{`&nbsp;**BlockStatement**`}`&nbsp;`else`&nbsp;`{`&nbsp;**BlockStatement**&nbsp;`}`,  
 &nbsp;&nbsp; **BlockStatement** &rarr; **Statement**`;`**BlockStatement** | **Statement**`;`,  
 &nbsp;&nbsp; **ExpressionStatement** &rarr; **Expression**`;`,  
 &nbsp;&nbsp; **Expression** &rarr; **Identifier** | **IntegerLiteral** | **BooleanLiteral** | **StringLiteral** |

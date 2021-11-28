@@ -1,7 +1,7 @@
 # Junior Interpreter
 
 [![GoDoc](https://godoc.org/github.com/radlinskii/interpreter?status.svg)](https://godoc.org/github.com/radlinskii/interpreter)
-[![Build Status](https://travis-ci.com/radlinskii/junior-interpreter.svg?branch=master)](https://travis-ci.com/radlinskii/junior-interpreter)
+[![Build](https://github.com/radlinskii/junior-interpreter/actions/workflows/go.yml/badge.svg)](https://github.com/radlinskii/junior-interpreter/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/radlinskii/interpreter)](https://goreportcard.com/report/github.com/radlinskii/interpreter)
 [![version](https://img.shields.io/github/release/radlinskii/junior-interpreter.svg)](https://img.shields.io/github/release/radlinskii/junior-interpreter.svg)
 

@@ -13,7 +13,7 @@ It's an interpreter written in Golang for programming language of our creation.<
 It's a project for *Theory of Compilation* classes at the *AGH* university.<br />
 It's based on [writing an interpreter in go](https://interpreterbook.com/) book.
 
-You can test it in action in our online REPL [here](https://junior-interpreter-online.herokuapp.com/).
+You can test it in action in our online REPL [here](https://junior-interpreter-online.vercel.app/).
 
 ## How it Works
 
